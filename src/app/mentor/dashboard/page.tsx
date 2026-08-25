@@ -39,13 +39,10 @@ import {
   Edit3,
   Eye,
   Star,
-  Target,
-  Compass,
-  HelpCircle,
+  Plus,
+  X,
   Award,
-  Terminal,
   Briefcase,
-  Check,
   Share2,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -57,17 +54,6 @@ type TabKey = "overview" | "sessions" | "availability" | "skills" | "earnings" |
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const PROFILE_SUBTABS = [
-  { id: "about", label: "About" },
-  { id: "skills", label: "Skills" },
-  { id: "outcomes", label: "What I Teach" },
-  { id: "approach", label: "Teaching Style" },
-  { id: "experience", label: "Experience" },
-  { id: "reviews", label: "Reviews" },
-  { id: "schedule", label: "Availability" },
-  { id: "pricing", label: "Pricing" },
-];
-
 export default function MentorStudioPage() {
   const router = useRouter();
   const { user, loading, logout, refreshUser } = useAuth();
@@ -77,11 +63,14 @@ export default function MentorStudioPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [fetchingData, setFetchingData] = useState(true);
 
-  // Edit Profile States
+  // Dynamic Profile Form States
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editExperienceYears, setEditExperienceYears] = useState<number>(2);
+  const [editSkills, setEditSkills] = useState<string[]>([]);
+  const [newSkillInput, setNewSkillInput] = useState("");
   const [editRate, setEditRate] = useState<number | string>(200);
   const [editIsFree, setEditIsFree] = useState(false);
   const [editAvailability, setEditAvailability] = useState("Available Today");
@@ -124,9 +113,11 @@ export default function MentorStudioPage() {
           const p = profileData.profile;
           setProfile(p);
           setEditTitle(p.title || "");
-          setEditLocation(p.location || "");
+          setEditLocation(p.location || "India");
           setEditBio(p.bio || "");
-          setEditRate(p.hourlyRate || 200);
+          setEditExperienceYears(p.experienceYears || 2);
+          setEditSkills(Array.isArray(p.teachingSkills) ? p.teachingSkills : ["skill-coaching"]);
+          setEditRate(p.hourlyRate !== undefined ? p.hourlyRate : 200);
           setEditIsFree(p.isFreeCommunity || false);
           setEditAvailability(p.availability || "Available Today");
           setEditLanguage(p.preferredLanguage || "Hindi / English");
@@ -157,6 +148,18 @@ export default function MentorStudioPage() {
     }
   };
 
+  const handleAddSkill = () => {
+    const trimmed = newSkillInput.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    if (trimmed && !editSkills.includes(trimmed)) {
+      setEditSkills([...editSkills, trimmed]);
+      setNewSkillInput("");
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setEditSkills(editSkills.filter((s) => s !== skillToRemove));
+  };
+
   const handleShare = () => {
     if (typeof window !== "undefined") {
       const url = `${window.location.origin}/mentors/${profileSlug}`;
@@ -172,6 +175,7 @@ export default function MentorStudioPage() {
     setSaveSuccess(false);
 
     try {
+      const skillsToSave = editSkills.length > 0 ? editSkills : ["practical-guidance"];
       const res = await fetch("/api/onboarding/mentor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -179,8 +183,8 @@ export default function MentorStudioPage() {
           title: editTitle,
           location: editLocation,
           bio: editBio,
-          teachingSkills: profile?.teachingSkills || ["home-cooking-recipes"],
-          experienceYears: profile?.experienceYears || 2,
+          teachingSkills: skillsToSave,
+          experienceYears: Number(editExperienceYears) || 1,
           hourlyRate: editIsFree ? 0 : Number(editRate),
           isFreeCommunity: editIsFree,
           availability: editAvailability,
@@ -195,6 +199,8 @@ export default function MentorStudioPage() {
           title: editTitle,
           location: editLocation,
           bio: editBio,
+          teachingSkills: skillsToSave,
+          experienceYears: Number(editExperienceYears) || 1,
           hourlyRate: editIsFree ? 0 : Number(editRate),
           isFreeCommunity: editIsFree,
           availability: editAvailability,
@@ -230,12 +236,18 @@ export default function MentorStudioPage() {
 
   const profileSlug = (user.name || "mentor").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + user.id.substring(0, 5);
 
+  const activeSkillsList = profile?.teachingSkills && profile.teachingSkills.length > 0
+    ? profile.teachingSkills
+    : editSkills.length > 0
+    ? editSkills
+    : ["practical-skills"];
+
   return (
     <div className={styles.studioRoot}>
       <div className={styles.ambientGlow} />
 
       {/* ----------------------------------------------------
-          Left Dark Emerald Sidebar
+          Left Dark Emerald Sidebar (Locked in Place)
           ---------------------------------------------------- */}
       <aside className={styles.sidebar}>
         <div>
@@ -371,7 +383,7 @@ export default function MentorStudioPage() {
           <div className={styles.topBarLeft}>
             <h1 className={styles.pageHeaderTitle}>
               {activeTab === "overview" && "Studio Overview"}
-              {activeTab === "profile" && (isEditingProfile ? "Edit Profile & Bio" : "Mentor Profile Page")}
+              {activeTab === "profile" && (isEditingProfile ? "Edit Mentor Profile Details" : "Public Profile Page")}
               {activeTab === "sessions" && "Scheduled Learner Lessons"}
               {activeTab === "availability" && "Schedule & Availability Settings"}
               {activeTab === "skills" && "Teaching Skills & Rates"}
@@ -389,7 +401,7 @@ export default function MentorStudioPage() {
             </div>
 
             <Link href={`/mentors/${profileSlug}`} target="_blank" className={styles.viewDirectoryLink}>
-              <span>Public Marketplace URL</span>
+              <span>Public Directory URL</span>
               <ExternalLink size={13} />
             </Link>
           </div>
@@ -577,7 +589,7 @@ export default function MentorStudioPage() {
                       </p>
 
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {(profile?.teachingSkills || ["home-cooking-recipes"]).map((s: string) => (
+                        {activeSkillsList.map((s: string) => (
                           <span
                             key={s}
                             style={{
@@ -687,7 +699,7 @@ export default function MentorStudioPage() {
           )}
 
           {/* ----------------------------------------------------
-              TAB 2: DEDICATED FULL PROFILE PAGE (INSIDE DASHBOARD)
+              TAB 2: DYNAMIC 100% REAL PROFILE PAGE (INSIDE DASHBOARD)
               ---------------------------------------------------- */}
           {activeTab === "profile" && (
             <div>
@@ -695,12 +707,12 @@ export default function MentorStudioPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem", background: "rgba(12, 29, 21, 0.8)", border: "1px solid rgba(52, 211, 153, 0.25)", borderRadius: "16px", padding: "1rem 1.5rem" }}>
                 <div>
                   <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#ffffff" }}>
-                    {isEditingProfile ? "Editing Profile Details" : "Your Live Marketplace Profile"}
+                    {isEditingProfile ? "Editing Real Profile Details" : "Your Real Mentor Profile"}
                   </div>
                   <div style={{ fontSize: "0.82rem", color: "rgba(226, 237, 231, 0.7)" }}>
                     {isEditingProfile
-                      ? "Make updates to your title, city, bio, and languages below"
-                      : "This is the exact full-page layout learners see when discovering you"}
+                      ? "Update your title, bio, skills, location, rate, and availability below"
+                      : "Live dynamic view connected directly to your PostgreSQL database"}
                   </div>
                 </div>
 
@@ -725,12 +737,12 @@ export default function MentorStudioPage() {
                     {isEditingProfile ? (
                       <>
                         <Eye size={16} />
-                        <span>Preview Profile View</span>
+                        <span>Preview Live Profile</span>
                       </>
                     ) : (
                       <>
                         <Edit3 size={16} />
-                        <span>Edit Profile Details</span>
+                        <span>Edit Profile</span>
                       </>
                     )}
                   </button>
@@ -764,62 +776,167 @@ export default function MentorStudioPage() {
                   <div className={styles.cardSectionTitleRow}>
                     <div className={styles.cardSectionTitle}>
                       <Edit3 size={20} color="#34d399" />
-                      <span>Edit Mentor Information</span>
+                      <span>Edit Real Mentor Profile</span>
                     </div>
                   </div>
 
                   <form onSubmit={handleSaveProfile} className={styles.formGrid}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>Professional Title / Speciality</label>
+                        <input
+                          type="text"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          placeholder="e.g. Node JS & Backend Specialist, Master Tailor..."
+                          className={styles.input}
+                          required
+                        />
+                      </div>
+
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>City, State & Country</label>
+                        <input
+                          type="text"
+                          value={editLocation}
+                          onChange={(e) => setEditLocation(e.target.value)}
+                          placeholder="e.g. Bhopal, Madhya Pradesh, India"
+                          className={styles.input}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>Languages You Teach In</label>
+                        <input
+                          type="text"
+                          value={editLanguage}
+                          onChange={(e) => setEditLanguage(e.target.value)}
+                          placeholder="e.g. Hindi, English"
+                          className={styles.input}
+                        />
+                      </div>
+
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>Years of Experience</label>
+                        <input
+                          type="number"
+                          value={editExperienceYears}
+                          onChange={(e) => setEditExperienceYears(Number(e.target.value))}
+                          className={styles.input}
+                          min={1}
+                          max={50}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dynamic Skills Adder / Remover */}
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel}>Professional Title / Role</label>
-                      <input
-                        type="text"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        placeholder="e.g. Master Tailor, Home Chef, Speed Maths Coach..."
-                        className={styles.input}
-                        required
-                      />
+                      <label className={styles.fieldLabel}>Teaching Skills (Add or Remove)</label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                        {editSkills.map((skill) => (
+                          <span
+                            key={skill}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.4rem",
+                              padding: "0.35rem 0.75rem",
+                              background: "rgba(16, 185, 129, 0.15)",
+                              border: "1px solid rgba(52, 211, 153, 0.3)",
+                              borderRadius: "9999px",
+                              color: "#34d399",
+                              fontSize: "0.82rem",
+                              fontWeight: 600,
+                            }}
+                          >
+                            <span>#{skill.replace(/-/g, " ")}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSkill(skill)}
+                              style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", padding: 0, display: "flex" }}
+                            >
+                              <X size={13} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <input
+                          type="text"
+                          value={newSkillInput}
+                          onChange={(e) => setNewSkillInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddSkill();
+                            }
+                          }}
+                          placeholder="Type a skill and press Add (e.g. Node JS, Tailoring, Math, Cooking)..."
+                          className={styles.input}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddSkill}
+                          className={styles.saveBtn}
+                          style={{ padding: "0.6rem 1.25rem", whiteSpace: "nowrap" }}
+                        >
+                          <Plus size={16} />
+                          <span>Add Skill</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel}>City & State</label>
-                      <input
-                        type="text"
-                        value={editLocation}
-                        onChange={(e) => setEditLocation(e.target.value)}
-                        placeholder="e.g. Bhopal, Madhya Pradesh, India"
-                        className={styles.input}
-                        required
-                      />
-                    </div>
-
-                    <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel}>Languages You Teach In</label>
-                      <input
-                        type="text"
-                        value={editLanguage}
-                        onChange={(e) => setEditLanguage(e.target.value)}
-                        placeholder="e.g. Hindi, English, Bengali, Tamil"
-                        className={styles.input}
-                      />
-                    </div>
-
-                    <div className={styles.fieldGroup}>
-                      <label className={styles.fieldLabel}>Teaching Bio & Background</label>
+                      <label className={styles.fieldLabel}>About You & Teaching Approach</label>
                       <textarea
                         value={editBio}
                         onChange={(e) => setEditBio(e.target.value)}
-                        placeholder="Describe what practical skills you teach and your teaching approach..."
+                        placeholder="Write a genuine introduction explaining what skills you teach, your practical background, and how you guide learners..."
                         className={styles.textarea}
+                        rows={5}
                         required
                       />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>Hourly Rate (₹)</label>
+                        <input
+                          type="number"
+                          value={editRate}
+                          onChange={(e) => setEditRate(e.target.value)}
+                          disabled={editIsFree}
+                          className={styles.input}
+                          min={0}
+                          step={50}
+                        />
+                      </div>
+
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>Availability Tag</label>
+                        <select
+                          value={editAvailability}
+                          onChange={(e) => setEditAvailability(e.target.value)}
+                          className={styles.input}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <option value="Available Today">Available Today (Daily Sessions)</option>
+                          <option value="This Week">This Week (Flexible Weekdays)</option>
+                          <option value="Weekend Only">Weekend Only (Sat & Sun)</option>
+                        </select>
+                      </div>
                     </div>
 
                     <button type="submit" disabled={savingProfile} className={styles.saveBtn}>
                       {savingProfile ? (
                         <>
                           <Loader2 size={16} className="animate-spin" />
-                          <span>Saving Profile...</span>
+                          <span>Saving Profile to Database...</span>
                         </>
                       ) : (
                         <>
@@ -832,13 +949,13 @@ export default function MentorStudioPage() {
                     {saveSuccess && (
                       <div style={{ color: "#34d399", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         <CheckCircle2 size={16} />
-                        <span>Profile updated successfully!</span>
+                        <span>Profile saved and updated live on the database!</span>
                       </div>
                     )}
                   </form>
                 </div>
               ) : (
-                /* Full Marketplace Profile Layout Inside Dashboard */
+                /* Dynamic Authentic Profile View (No Generic Filler) */
                 <div>
                   {/* Hero Card */}
                   <div className={profileStyles.heroSection}>
@@ -862,17 +979,19 @@ export default function MentorStudioPage() {
                             </h1>
                           </div>
 
-                          <div className={profileStyles.professionalTitle}>{profile?.title || editTitle || "Master Mentor"}</div>
+                          <div className={profileStyles.professionalTitle}>
+                            {profile?.title || editTitle || "Master Mentor"}
+                          </div>
 
                           <div className={profileStyles.metadataRow}>
                             <div className={profileStyles.metaBadge}>
                               <MapPin size={15} color="#34d399" />
-                              <span>{profile?.location || editLocation || "Bhopal, Madhya Pradesh, India"}</span>
+                              <span>{profile?.location || editLocation || "India"}</span>
                             </div>
 
                             <div className={profileStyles.metaBadge}>
                               <Clock size={15} color="#34d399" />
-                              <span>{profile?.experienceYears || 2} Years Experience</span>
+                              <span>{profile?.experienceYears || editExperienceYears} Years Experience</span>
                             </div>
 
                             <div className={profileStyles.metaBadge}>
@@ -884,7 +1003,7 @@ export default function MentorStudioPage() {
                       </div>
 
                       <p className={profileStyles.heroBioSummary}>
-                        {profile?.bio || editBio || "Dedicated mentor committed to practical, project-based guidance and helping learners achieve their personal and career milestones."}
+                        {profile?.bio || editBio || "Dedicated mentor offering practical 1-on-1 guidance."}
                       </p>
 
                       <div className={profileStyles.statsRow}>
@@ -909,7 +1028,7 @@ export default function MentorStudioPage() {
                         <div className={profileStyles.statItem}>
                           <div className={profileStyles.statValue}>
                             <BookOpen size={16} color="#34d399" />
-                            <span>{(profile?.teachingSkills || ["home-cooking-recipes"]).length}</span>
+                            <span>{activeSkillsList.length}</span>
                           </div>
                           <div className={profileStyles.statLabel}>Skills Listed</div>
                         </div>
@@ -917,7 +1036,7 @@ export default function MentorStudioPage() {
                         <div className={profileStyles.statItem}>
                           <div className={profileStyles.statValue}>
                             <Award size={16} color="#34d399" />
-                            <span>{profile?.experienceYears || 2}+ yrs</span>
+                            <span>{profile?.experienceYears || editExperienceYears}+ yrs</span>
                           </div>
                           <div className={profileStyles.statLabel}>Experience</div>
                         </div>
@@ -965,7 +1084,7 @@ export default function MentorStudioPage() {
                         </div>
                         <div className={profileStyles.guaranteeItem}>
                           <Check size={14} color="#34d399" />
-                          <span>Session notes & recorded takeaways</span>
+                          <span>Session notes & direct doubt resolution</span>
                         </div>
                       </div>
                     </aside>
@@ -976,15 +1095,15 @@ export default function MentorStudioPage() {
                     <div className={profileStyles.sectionHeader}>
                       <h2 className={profileStyles.sectionTitle}>
                         <BookOpen size={20} color="#34d399" />
-                        <span>About the Mentor</span>
+                        <span>About {user.name}</span>
                       </h2>
                       <p className={profileStyles.sectionSubtitle}>
-                        Background, practical journey, and mentoring philosophy
+                        Background, practical journey, and mentoring approach
                       </p>
                     </div>
 
                     <p className={profileStyles.bodyParagraph}>
-                      {profile?.bio || editBio || "I am a dedicated practitioner focused on sharing real-world, actionable skills. My teaching style combines core foundations with step-by-step practical exercises so learners can apply what they learn immediately in their daily life, projects, and work."}
+                      {profile?.bio || editBio || "Dedicated mentor committed to practical 1-on-1 guidance."}
                     </p>
                   </div>
 
@@ -993,15 +1112,15 @@ export default function MentorStudioPage() {
                     <div className={profileStyles.sectionHeader}>
                       <h2 className={profileStyles.sectionTitle}>
                         <Sparkles size={20} color="#34d399" />
-                        <span>Skills & Expertise</span>
+                        <span>Skills Taught in 1-on-1 Lessons</span>
                       </h2>
                       <p className={profileStyles.sectionSubtitle}>
-                        Topics, tools, and specialized subjects taught in 1-on-1 sessions
+                        Topics and areas available for personalized sessions
                       </p>
                     </div>
 
                     <div className={profileStyles.skillsGrid}>
-                      {(profile?.teachingSkills || ["home-cooking-recipes"]).map((skill: string, idx: number) => (
+                      {activeSkillsList.map((skill: string, idx: number) => (
                         <div key={skill} className={profileStyles.skillCard}>
                           <div className={profileStyles.skillName}>
                             #{skill.replace(/-/g, " ")}
@@ -1014,141 +1133,30 @@ export default function MentorStudioPage() {
                     </div>
                   </div>
 
-                  {/* What I Can Help With */}
-                  <div className={profileStyles.sectionCard}>
-                    <div className={profileStyles.sectionHeader}>
-                      <h2 className={profileStyles.sectionTitle}>
-                        <Target size={20} color="#34d399" />
-                        <span>What I Can Help You With</span>
-                      </h2>
-                      <p className={profileStyles.sectionSubtitle}>
-                        Concrete learning outcomes and session goals we can tackle together
-                      </p>
-                    </div>
-
-                    <div className={profileStyles.helpCardsGrid}>
-                      <div className={profileStyles.helpCard}>
-                        <div className={profileStyles.helpCardIcon}>
-                          <Terminal size={20} />
-                        </div>
-                        <h3 className={profileStyles.helpCardTitle}>Build Real Practical Projects</h3>
-                        <p className={profileStyles.helpCardDesc}>
-                          Learn how to build real-world examples from scratch with proper technique, step-by-step guidance, and live execution.
-                        </p>
-                      </div>
-
-                      <div className={profileStyles.helpCard}>
-                        <div className={profileStyles.helpCardIcon}>
-                          <Compass size={20} />
-                        </div>
-                        <h3 className={profileStyles.helpCardTitle}>Master Core Foundations</h3>
-                        <p className={profileStyles.helpCardDesc}>
-                          Understand fundamental principles clearly without confusing jargon so you build durable, long-term confidence.
-                        </p>
-                      </div>
-
-                      <div className={profileStyles.helpCard}>
-                        <div className={profileStyles.helpCardIcon}>
-                          <HelpCircle size={20} />
-                        </div>
-                        <h3 className={profileStyles.helpCardTitle}>Troubleshoot & Clear Doubts</h3>
-                        <p className={profileStyles.helpCardDesc}>
-                          Bring your existing hurdles, homework, or projects to our session and resolve roadblocks with an experienced guide.
-                        </p>
-                      </div>
-
-                      <div className={profileStyles.helpCard}>
-                        <div className={profileStyles.helpCardIcon}>
-                          <Briefcase size={20} />
-                        </div>
-                        <h3 className={profileStyles.helpCardTitle}>Career & Real-World Advice</h3>
-                        <p className={profileStyles.helpCardDesc}>
-                          Get practical insights on industry workflows, starting your own home business/freelancing, and interview preparation.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* How I Teach */}
-                  <div className={profileStyles.sectionCard}>
-                    <div className={profileStyles.sectionHeader}>
-                      <h2 className={profileStyles.sectionTitle}>
-                        <Sparkles size={20} color="#34d399" />
-                        <span>How I Teach</span>
-                      </h2>
-                      <p className={profileStyles.sectionSubtitle}>
-                        A friendly, approachable, and outcome-oriented mentorship structure
-                      </p>
-                    </div>
-
-                    <div className={profileStyles.approachGrid}>
-                      <div className={profileStyles.approachCard}>
-                        <div className={profileStyles.approachIcon}>
-                          <CheckCircle2 size={24} />
-                        </div>
-                        <h3 className={profileStyles.approachTitle}>Practical & Applied</h3>
-                        <p className={profileStyles.approachDesc}>
-                          Learn through actual live examples and interactive practice instead of dry theory.
-                        </p>
-                      </div>
-
-                      <div className={profileStyles.approachCard}>
-                        <div className={profileStyles.approachIcon}>
-                          <Users size={24} />
-                        </div>
-                        <h3 className={profileStyles.approachTitle}>Beginner Friendly</h3>
-                        <p className={profileStyles.approachDesc}>
-                          Every concept is broken down patiently from the basics. No previous background required.
-                        </p>
-                      </div>
-
-                      <div className={profileStyles.approachCard}>
-                        <div className={profileStyles.approachIcon}>
-                          <Video size={24} />
-                        </div>
-                        <h3 className={profileStyles.approachTitle}>100% Hands-On</h3>
-                        <p className={profileStyles.approachDesc}>
-                          Practice alongside the mentor with live demonstrations, immediate feedback, and corrections.
-                        </p>
-                      </div>
-
-                      <div className={profileStyles.approachCard}>
-                        <div className={profileStyles.approachIcon}>
-                          <Award size={24} />
-                        </div>
-                        <h3 className={profileStyles.approachTitle}>Personalized Pace</h3>
-                        <p className={profileStyles.approachDesc}>
-                          Lessons are fully tailored to your personal speed, background, and specific end goals.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Availability Schedule */}
+                  {/* Active Weekly Availability */}
                   <div className={profileStyles.sectionCard}>
                     <div className={profileStyles.sectionHeader}>
                       <h2 className={profileStyles.sectionTitle}>
                         <Clock size={20} color="#34d399" />
-                        <span>Weekly Teaching Schedule</span>
+                        <span>Active Weekly Availability</span>
                       </h2>
                       <p className={profileStyles.sectionSubtitle}>
-                        Standard time slots available for 1-on-1 lesson booking
+                        Standard days and time slots configured for booking
                       </p>
                     </div>
 
                     <div className={profileStyles.scheduleGrid}>
-                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-                        <div key={day} className={profileStyles.dayCard}>
-                          <div className={profileStyles.dayName}>{day}</div>
-                          <div className={profileStyles.daySlot}>
-                            {day === "Sunday"
-                              ? "10:00 AM – 2:00 PM"
-                              : day === "Saturday"
-                              ? "10:00 AM – 4:00 PM"
-                              : "06:00 PM – 09:00 PM"}
+                      {DAYS_OF_WEEK.map((day) => {
+                        const isAvailable = selectedDays.includes(day);
+                        return (
+                          <div key={day} className={profileStyles.dayCard} style={{ opacity: isAvailable ? 1 : 0.45 }}>
+                            <div className={profileStyles.dayName}>{day}</div>
+                            <div className={profileStyles.daySlot} style={{ color: isAvailable ? "#34d399" : "rgba(226, 237, 231, 0.4)" }}>
+                              {isAvailable ? "Available" : "Off"}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

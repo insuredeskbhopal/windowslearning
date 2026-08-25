@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use, useRef } from "react";
+import React, { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,28 +25,13 @@ import {
   X,
   MessageSquare,
   Award,
-  Terminal,
-  Compass,
-  Target,
-  Briefcase,
-  HelpCircle,
-  ExternalLink,
 } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import { DbMentor } from "@/lib/db";
 import styles from "./page.module.css";
 
-const SECTION_TABS = [
-  { id: "about", label: "About" },
-  { id: "skills", label: "Skills" },
-  { id: "outcomes", label: "What I Teach" },
-  { id: "approach", label: "Teaching Style" },
-  { id: "experience", label: "Experience" },
-  { id: "reviews", label: "Reviews" },
-  { id: "schedule", label: "Availability" },
-  { id: "pricing", label: "Pricing" },
-];
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function DedicatedMentorProfilePage({
   params,
@@ -60,7 +45,6 @@ export default function DedicatedMentorProfilePage({
   const [mentor, setMentor] = useState<DbMentor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("about");
 
   // Booking Modal State
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -94,16 +78,6 @@ export default function DedicatedMentorProfilePage({
     }
     loadMentor();
   }, [resolvedParams.slug]);
-
-  const scrollToSection = (id: string) => {
-    setActiveTab(id);
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -90;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
-  };
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -160,7 +134,7 @@ export default function DedicatedMentorProfilePage({
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: "#020705", color: "#34d399", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        Loading Verified Mentor Profile...
+        Loading Mentor Profile...
       </div>
     );
   }
@@ -278,7 +252,7 @@ export default function DedicatedMentorProfilePage({
 
             {/* Short Bio summary */}
             <p className={styles.heroBioSummary}>
-              {mentor.bio || "Dedicated mentor committed to practical, project-based guidance and helping learners achieve their personal and career milestones."}
+              {mentor.bio || "Dedicated mentor committed to practical guidance."}
             </p>
 
             {/* Compact Stats Row */}
@@ -296,9 +270,9 @@ export default function DedicatedMentorProfilePage({
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
                   <Users size={16} color="#34d399" />
-                  <span>{mentor.studentsMentored > 0 ? `${mentor.studentsMentored}+` : "1-on-1"}</span>
+                  <span>1-on-1</span>
                 </div>
-                <div className={styles.statLabel}>Learners Guided</div>
+                <div className={styles.statLabel}>Personal Guidance</div>
               </div>
 
               <div className={styles.statItem}>
@@ -352,7 +326,7 @@ export default function DedicatedMentorProfilePage({
             <button
               type="button"
               onClick={() => {
-                alert(`Starting quick message chat with mentor ${mentor.name}. You can also book directly!`);
+                alert(`Starting quick message with mentor ${mentor.name}. You can also book directly!`);
               }}
               className={styles.secondaryMessageBtn}
             >
@@ -378,51 +352,35 @@ export default function DedicatedMentorProfilePage({
         </section>
 
         {/* ----------------------------------------------------
-            Sticky Profile Sub-Navigation Bar
-            ---------------------------------------------------- */}
-        <nav className={styles.navCapsuleBar}>
-          {SECTION_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => scrollToSection(tab.id)}
-              className={`${styles.navCapsuleBtn} ${activeTab === tab.id ? styles.navCapsuleBtnActive : ""}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* ----------------------------------------------------
             Section 1: About the Mentor
             ---------------------------------------------------- */}
-        <section id="about" className={styles.sectionCard}>
+        <section className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
               <BookOpen size={20} color="#34d399" />
-              <span>About the Mentor</span>
+              <span>About {mentor.name}</span>
             </h2>
             <p className={styles.sectionSubtitle}>
-              Background, practical journey, and mentoring philosophy
+              Background, practical journey, and mentoring approach
             </p>
           </div>
 
           <p className={styles.bodyParagraph}>
-            {mentor.bio || "I am a dedicated practitioner focused on sharing real-world, actionable skills. My teaching style combines core foundations with step-by-step practical exercises so learners can apply what they learn immediately in their daily life, projects, and work."}
+            {mentor.bio || "Dedicated mentor committed to practical, step-by-step guidance."}
           </p>
         </section>
 
         {/* ----------------------------------------------------
             Section 2: Skills & Expertise
             ---------------------------------------------------- */}
-        <section id="skills" className={styles.sectionCard}>
+        <section className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
               <Sparkles size={20} color="#34d399" />
-              <span>Skills & Expertise</span>
+              <span>Skills Taught in 1-on-1 Lessons</span>
             </h2>
             <p className={styles.sectionSubtitle}>
-              Topics, tools, and specialized subjects taught in 1-on-1 sessions
+              Topics and practical domains covered in sessions
             </p>
           </div>
 
@@ -441,165 +399,48 @@ export default function DedicatedMentorProfilePage({
         </section>
 
         {/* ----------------------------------------------------
-            Section 3: What I Can Help You With
+            Section 3: Weekly Availability Schedule
             ---------------------------------------------------- */}
-        <section id="outcomes" className={styles.sectionCard}>
+        <section className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
-              <Target size={20} color="#34d399" />
-              <span>What I Can Help You With</span>
+              <Clock size={20} color="#34d399" />
+              <span>Weekly Teaching Schedule</span>
             </h2>
             <p className={styles.sectionSubtitle}>
-              Concrete learning outcomes and session goals we can tackle together
+              Active availability slots for 1-on-1 bookings
             </p>
           </div>
 
-          <div className={styles.helpCardsGrid}>
-            <div className={styles.helpCard}>
-              <div className={styles.helpCardIcon}>
-                <Terminal size={20} />
-              </div>
-              <h3 className={styles.helpCardTitle}>Build Real Practical Projects</h3>
-              <p className={styles.helpCardDesc}>
-                Learn how to build real-world examples from scratch with proper technique, step-by-step guidance, and live execution.
-              </p>
-            </div>
+          <div className={styles.scheduleGrid}>
+            {DAYS_OF_WEEK.map((day) => {
+              const isWeekendOnly = mentor.availability === "Weekend Only";
+              const isWeekend = day === "Saturday" || day === "Sunday";
+              const isAvailable = isWeekendOnly ? isWeekend : true;
 
-            <div className={styles.helpCard}>
-              <div className={styles.helpCardIcon}>
-                <Compass size={20} />
-              </div>
-              <h3 className={styles.helpCardTitle}>Master Core Foundations</h3>
-              <p className={styles.helpCardDesc}>
-                Understand fundamental principles clearly without confusing jargon so you build durable, long-term confidence.
-              </p>
-            </div>
-
-            <div className={styles.helpCard}>
-              <div className={styles.helpCardIcon}>
-                <HelpCircle size={20} />
-              </div>
-              <h3 className={styles.helpCardTitle}>Troubleshoot & Clear Doubts</h3>
-              <p className={styles.helpCardDesc}>
-                Bring your existing hurdles, homework, or projects to our session and resolve roadblocks with an experienced guide.
-              </p>
-            </div>
-
-            <div className={styles.helpCard}>
-              <div className={styles.helpCardIcon}>
-                <Briefcase size={20} />
-              </div>
-              <h3 className={styles.helpCardTitle}>Career & Real-World Advice</h3>
-              <p className={styles.helpCardDesc}>
-                Get practical insights on industry workflows, starting your own home business/freelancing, and interview preparation.
-              </p>
-            </div>
+              return (
+                <div key={day} className={styles.dayCard} style={{ opacity: isAvailable ? 1 : 0.45 }}>
+                  <div className={styles.dayName}>{day}</div>
+                  <div className={styles.daySlot} style={{ color: isAvailable ? "#34d399" : "rgba(226, 237, 231, 0.4)" }}>
+                    {isAvailable ? "Available" : "Off"}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
         {/* ----------------------------------------------------
-            Section 4: Teaching Approach / How I Teach
+            Section 4: Learner Reviews
             ---------------------------------------------------- */}
-        <section id="approach" className={styles.sectionCard}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Sparkles size={20} color="#34d399" />
-              <span>How I Teach</span>
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              A friendly, approachable, and outcome-oriented mentorship structure
-            </p>
-          </div>
-
-          <div className={styles.approachGrid}>
-            <div className={styles.approachCard}>
-              <div className={styles.approachIcon}>
-                <CheckCircle2 size={24} />
-              </div>
-              <h3 className={styles.approachTitle}>Practical & Applied</h3>
-              <p className={styles.approachDesc}>
-                Learn through actual live examples and interactive practice instead of dry theory.
-              </p>
-            </div>
-
-            <div className={styles.approachCard}>
-              <div className={styles.approachIcon}>
-                <Users size={24} />
-              </div>
-              <h3 className={styles.approachTitle}>Beginner Friendly</h3>
-              <p className={styles.approachDesc}>
-                Every concept is broken down patiently from the basics. No previous background required.
-              </p>
-            </div>
-
-            <div className={styles.approachCard}>
-              <div className={styles.approachIcon}>
-                <Video size={24} />
-              </div>
-              <h3 className={styles.approachTitle}>100% Hands-On</h3>
-              <p className={styles.approachDesc}>
-                Practice alongside the mentor with live demonstrations, immediate feedback, and corrections.
-              </p>
-            </div>
-
-            <div className={styles.approachCard}>
-              <div className={styles.approachIcon}>
-                <Award size={24} />
-              </div>
-              <h3 className={styles.approachTitle}>Personalized Pace</h3>
-              <p className={styles.approachDesc}>
-                Lessons are fully tailored to your personal speed, background, and specific end goals.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ----------------------------------------------------
-            Section 5: Experience Timeline
-            ---------------------------------------------------- */}
-        <section id="experience" className={styles.sectionCard}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Briefcase size={20} color="#34d399" />
-              <span>Professional Experience</span>
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              Proven track record in practical training and industry application
-            </p>
-          </div>
-
-          <div className={styles.timelineWrapper}>
-            <div className={styles.timelineItem}>
-              <div className={styles.timelineDot} />
-              <div className={styles.timelineRole}>{mentor.role} • Independent Specialist</div>
-              <div className={styles.timelinePeriod}>2023 — Present ({mentor.company})</div>
-              <p className={styles.timelineDesc}>
-                Guiding students and learners in 1-on-1 practical masterclasses, developing personalized learning plans, and sharing industry best practices.
-              </p>
-            </div>
-
-            <div className={styles.timelineItem}>
-              <div className={styles.timelineDot} />
-              <div className={styles.timelineRole}>Professional Practitioner & Instructor</div>
-              <div className={styles.timelinePeriod}>2021 — 2023</div>
-              <p className={styles.timelineDesc}>
-                Hands-on execution across real client projects, workshops, and skill-building cohorts.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ----------------------------------------------------
-            Section 6: Learner Reviews
-            ---------------------------------------------------- */}
-        <section id="reviews" className={styles.sectionCard}>
+        <section className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
               <Star size={20} color="#fbbf24" />
               <span>Learner Reviews & Ratings</span>
             </h2>
             <p className={styles.sectionSubtitle}>
-              Authentic feedback from students who completed 1-on-1 sessions
+              Authentic feedback from students
             </p>
           </div>
 
@@ -612,31 +453,13 @@ export default function DedicatedMentorProfilePage({
                   ))}
                 </div>
                 <p className={styles.reviewQuote}>
-                  &ldquo;The session was incredibly practical and clear. The mentor explained complex points with easy daily examples, and I was able to build confidence in just one hour.&rdquo;
-                </p>
-                <div className={styles.reviewerRow}>
-                  <div className={styles.reviewerAvatar}>RS</div>
-                  <div>
-                    <div className={styles.reviewerName}>Rahul Sharma</div>
-                    <div className={styles.reviewTopic}>1-on-1 Mentorship • 2 weeks ago</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.reviewCard}>
-                <div className={styles.starsRow}>
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} size={15} fill="#fbbf24" color="#fbbf24" />
-                  ))}
-                </div>
-                <p className={styles.reviewQuote}>
                   &ldquo;Extremely patient and approachable teacher! Solved all my doubts step-by-step. Highly recommend to anyone wanting real practical skills.&rdquo;
                 </p>
                 <div className={styles.reviewerRow}>
                   <div className={styles.reviewerAvatar}>PK</div>
                   <div>
-                    <div className={styles.reviewerName}>Pooja Kumari</div>
-                    <div className={styles.reviewTopic}>Practical Foundations • 1 month ago</div>
+                    <div className={styles.reviewerName}>Learner Feedback</div>
+                    <div className={styles.reviewTopic}>1-on-1 Mentorship</div>
                   </div>
                 </div>
               </div>
@@ -664,114 +487,7 @@ export default function DedicatedMentorProfilePage({
         </section>
 
         {/* ----------------------------------------------------
-            Section 7: Weekly Availability Schedule
-            ---------------------------------------------------- */}
-        <section id="schedule" className={styles.sectionCard}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Clock size={20} color="#34d399" />
-              <span>Weekly Teaching Schedule</span>
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              Standard time slots available for 1-on-1 lesson booking
-            </p>
-          </div>
-
-          <div className={styles.scheduleGrid}>
-            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-              <div key={day} className={styles.dayCard}>
-                <div className={styles.dayName}>{day}</div>
-                <div className={styles.daySlot}>
-                  {day === "Sunday" && mentor.availability === "Weekend Only"
-                    ? "10:00 AM – 2:00 PM"
-                    : day === "Saturday" || day === "Sunday"
-                    ? "10:00 AM – 4:00 PM"
-                    : mentor.availability === "Weekend Only"
-                    ? "Not Available"
-                    : "06:00 PM – 09:00 PM"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ----------------------------------------------------
-            Section 8: Pricing & Mentorship Plan
-            ---------------------------------------------------- */}
-        <section id="pricing" className={styles.sectionCard}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <Zap size={20} color="#34d399" />
-              <span>Transparent Pricing & Inclusions</span>
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              No hidden fees. 100% focused on your personalized growth.
-            </p>
-          </div>
-
-          <div style={{ background: "rgba(4, 13, 9, 0.7)", border: "1px solid rgba(52, 211, 153, 0.3)", borderRadius: "18px", padding: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1.5rem" }}>
-            <div>
-              <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#ffffff", marginBottom: "0.3rem" }}>
-                1-on-1 Personal Lesson
-              </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: "#34d399", fontFamily: "var(--font-mono)", marginBottom: "0.75rem" }}>
-                {mentor.isFreeCommunity ? "Free Community Class" : `₹${mentor.hourlyRate} / 60-min session`}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem", color: "rgba(226, 237, 231, 0.8)" }}>
-                <div>✓ Live 1-on-1 interactive video meeting link</div>
-                <div>✓ Tailored exercise & step-by-step practical feedback</div>
-                <div>✓ Direct doubt clearance during session</div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={openBookingModal}
-              className={styles.primaryBookBtn}
-              style={{ width: "auto", padding: "1rem 2rem", margin: 0 }}
-            >
-              <span>Book 1-on-1 Session</span>
-              <ArrowRight size={18} />
-            </button>
-          </div>
-        </section>
-
-        {/* ----------------------------------------------------
-            Section 9: Recommended For / Who Is This Mentor For
-            ---------------------------------------------------- */}
-        <section className={styles.sectionCard}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <CheckCircle2 size={20} color="#34d399" />
-              <span>Who This Mentor Is Best Suited For</span>
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              Ideal learner profiles who will gain the highest value
-            </p>
-          </div>
-
-          <div className={styles.fitGrid}>
-            <div className={styles.fitItem}>
-              <CheckCircle2 size={18} color="#34d399" flex-shrink={0} />
-              <span>Beginners wanting clear, step-by-step hands-on guidance</span>
-            </div>
-            <div className={styles.fitItem}>
-              <CheckCircle2 size={18} color="#34d399" flex-shrink={0} />
-              <span>Learners stuck on specific practical doubts and problems</span>
-            </div>
-            <div className={styles.fitItem}>
-              <CheckCircle2 size={18} color="#34d399" flex-shrink={0} />
-              <span>Students building a portfolio, project, or exam preparation</span>
-            </div>
-            <div className={styles.fitItem}>
-              <CheckCircle2 size={18} color="#34d399" flex-shrink={0} />
-              <span>Anyone wanting to master a vocational craft or technical trade</span>
-            </div>
-          </div>
-        </section>
-
-        {/* ----------------------------------------------------
-            Section 10: Final High-Conversion CTA Banner
+            Section 5: Final High-Conversion CTA Banner
             ---------------------------------------------------- */}
         <div className={styles.conversionBanner}>
           <h2 className={styles.bannerTitle}>
@@ -790,16 +506,6 @@ export default function DedicatedMentorProfilePage({
             >
               <Calendar size={18} />
               <span>Book a 1-on-1 Session</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => scrollToSection("schedule")}
-              className={styles.secondaryMessageBtn}
-              style={{ width: "auto", padding: "1rem 1.75rem" }}
-            >
-              <Clock size={16} />
-              <span>View Available Slots</span>
             </button>
           </div>
         </div>
