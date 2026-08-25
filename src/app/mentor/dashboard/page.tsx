@@ -25,12 +25,19 @@ import {
   TrendingUp,
   MapPin,
   Languages,
+  ToggleLeft,
+  ToggleRight,
+  Sun,
+  Moon,
+  Coffee,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import BrandLogo from "@/components/Navbar/BrandLogo";
 import styles from "./page.module.css";
 
-type TabKey = "overview" | "sessions" | "skills" | "earnings" | "profile";
+type TabKey = "overview" | "sessions" | "availability" | "skills" | "earnings" | "profile";
+
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function MentorStudioPage() {
   const router = useRouter();
@@ -52,6 +59,22 @@ export default function MentorStudioPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [upiId, setUpiId] = useState("mentor@okaxis");
+
+  // Availability Management States
+  const [selectedDays, setSelectedDays] = useState<string[]>([
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ]);
+  const [morningSlot, setMorningSlot] = useState(true);
+  const [afternoonSlot, setAfternoonSlot] = useState(true);
+  const [eveningSlot, setEveningSlot] = useState(true);
+  const [nightSlot, setNightSlot] = useState(false);
+  const [instantBooking, setInstantBooking] = useState(true);
+  const [vacationMode, setVacationMode] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -94,6 +117,14 @@ export default function MentorStudioPage() {
       loadStudioData();
     }
   }, [user]);
+
+  const toggleDay = (day: string) => {
+    if (selectedDays.includes(day)) {
+      setSelectedDays(selectedDays.filter((d) => d !== day));
+    } else {
+      setSelectedDays([...selectedDays, day]);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +187,8 @@ export default function MentorStudioPage() {
         .substring(0, 2)
     : "M";
 
+  const profileSlug = (user.name || "mentor").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + user.id.substring(0, 5);
+
   return (
     <div className={styles.studioRoot}>
       <div className={styles.ambientGlow} />
@@ -211,12 +244,25 @@ export default function MentorStudioPage() {
             <li>
               <button
                 type="button"
+                className={`${styles.navItemBtn} ${activeTab === "availability" ? styles.navItemBtnActive : ""}`}
+                onClick={() => setActiveTab("availability")}
+              >
+                <div className={styles.navItemLeft}>
+                  <Clock size={18} />
+                  <span>Schedule & Availability</span>
+                </div>
+              </button>
+            </li>
+
+            <li>
+              <button
+                type="button"
                 className={`${styles.navItemBtn} ${activeTab === "skills" ? styles.navItemBtnActive : ""}`}
                 onClick={() => setActiveTab("skills")}
               >
                 <div className={styles.navItemLeft}>
                   <BookOpen size={18} />
-                  <span>Teaching Skills & Pricing</span>
+                  <span>Skills & Pricing</span>
                 </div>
               </button>
             </li>
@@ -282,6 +328,7 @@ export default function MentorStudioPage() {
             <h1 className={styles.pageHeaderTitle}>
               {activeTab === "overview" && "Studio Overview"}
               {activeTab === "sessions" && "Scheduled Learner Lessons"}
+              {activeTab === "availability" && "Schedule & Availability Settings"}
               {activeTab === "skills" && "Teaching Skills & Rates"}
               {activeTab === "earnings" && "Earnings & Bank Payouts"}
               {activeTab === "profile" && "Edit Mentor Profile & Bio"}
@@ -291,11 +338,11 @@ export default function MentorStudioPage() {
           <div className={styles.topBarRight}>
             <div className={styles.statusToggle}>
               <span className={styles.badgePulse} />
-              <span>Available for 1-on-1 Lessons</span>
+              <span>{vacationMode ? "🏖️ Out of Office" : "Available for 1-on-1 Lessons"}</span>
             </div>
 
-            <Link href="/mentors" className={styles.viewDirectoryLink}>
-              <span>Public Directory</span>
+            <Link href={`/mentors/${profileSlug}`} className={styles.viewDirectoryLink}>
+              <span>View Dedicated Profile Page</span>
               <ExternalLink size={13} />
             </Link>
           </div>
@@ -430,8 +477,8 @@ export default function MentorStudioPage() {
                         <p style={{ fontSize: "0.88rem", color: "rgba(226, 237, 231, 0.65)", maxWidth: "420px", margin: "0 auto 1.25rem auto", lineHeight: "1.5" }}>
                           Learners can now book lessons with you. When someone books a 1-on-1 slot, you will receive real-time notifications right here.
                         </p>
-                        <Link href="/mentors" className={styles.saveBtn} style={{ margin: "0 auto" }}>
-                          <span>View Public Mentor Listing</span>
+                        <Link href={`/mentors/${profileSlug}`} className={styles.saveBtn} style={{ margin: "0 auto" }}>
+                          <span>View Your Dedicated Profile Page</span>
                           <ArrowRight size={14} />
                         </Link>
                       </div>
@@ -446,13 +493,13 @@ export default function MentorStudioPage() {
                       <div className={styles.cardSectionTitle}>
                         <span>Public Profile Preview</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("profile")}
-                        style={{ background: "none", border: "none", color: "#34d399", fontSize: "0.82rem", cursor: "pointer" }}
+                      <Link
+                        href={`/mentors/${profileSlug}`}
+                        style={{ color: "#34d399", fontSize: "0.82rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}
                       >
-                        Edit
-                      </button>
+                        <span>Full Page</span>
+                        <ExternalLink size={12} />
+                      </Link>
                     </div>
 
                     <div style={{ background: "rgba(4, 13, 9, 0.7)", border: "1px solid rgba(52, 211, 153, 0.25)", borderRadius: "14px", padding: "1.25rem" }}>
@@ -551,10 +598,10 @@ export default function MentorStudioPage() {
                     No Scheduled Sessions Yet
                   </div>
                   <p style={{ fontSize: "0.9rem", color: "rgba(226, 237, 231, 0.65)", maxWidth: "450px", margin: "0 auto 1.5rem auto", lineHeight: "1.6" }}>
-                    When learners book a 1-on-1 session with you from the directory, their requests and meeting schedules will appear here.
+                    When learners book a 1-on-1 session with you from your profile or the directory, their requests and meeting schedules will appear here.
                   </p>
-                  <Link href="/mentors" className={styles.saveBtn} style={{ margin: "0 auto" }}>
-                    <span>Browse Mentor Directory</span>
+                  <Link href={`/mentors/${profileSlug}`} className={styles.saveBtn} style={{ margin: "0 auto" }}>
+                    <span>Preview Your Booking Page</span>
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -562,7 +609,200 @@ export default function MentorStudioPage() {
             </div>
           )}
 
-          {/* TAB 3: SKILLS & PRICING */}
+          {/* TAB 3: SCHEDULE & AVAILABILITY MANAGER */}
+          {activeTab === "availability" && (
+            <div className={styles.cardSection}>
+              <div className={styles.cardSectionTitleRow}>
+                <div className={styles.cardSectionTitle}>
+                  <Clock size={20} color="#34d399" />
+                  <span>Teaching Schedule & Time Slot Availability</span>
+                </div>
+              </div>
+
+              <div className={styles.formGrid}>
+                {/* Active Days of the Week */}
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Days You Are Available to Teach</label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem" }}>
+                    {DAYS_OF_WEEK.map((day) => {
+                      const isSelected = selectedDays.includes(day);
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => toggleDay(day)}
+                          style={{
+                            padding: "0.5rem 1rem",
+                            borderRadius: "10px",
+                            border: "1px solid",
+                            borderColor: isSelected ? "#34d399" : "rgba(255,255,255,0.1)",
+                            background: isSelected ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.03)",
+                            color: isSelected ? "#ffffff" : "rgba(226, 237, 231, 0.65)",
+                            fontSize: "0.85rem",
+                            fontWeight: isSelected ? 700 : 500,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Available Daily Time Slots */}
+                <div className={styles.fieldGroup} style={{ marginTop: "1rem" }}>
+                  <label className={styles.fieldLabel}>Available Time Slots</label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.75rem", marginTop: "0.3rem" }}>
+                    <div
+                      onClick={() => setMorningSlot(!morningSlot)}
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "12px",
+                        border: "1px solid",
+                        borderColor: morningSlot ? "rgba(52, 211, 153, 0.4)" : "rgba(255,255,255,0.08)",
+                        background: morningSlot ? "rgba(16, 185, 129, 0.12)" : "rgba(4, 13, 9, 0.6)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                        <Sun size={18} color="#34d399" />
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.9rem" }}>Morning Slots</div>
+                          <div style={{ fontSize: "0.78rem", color: "rgba(226, 237, 231, 0.65)" }}>10:00 AM – 12:00 PM</div>
+                        </div>
+                      </div>
+                      <CheckCircle2 size={18} color={morningSlot ? "#34d399" : "rgba(255,255,255,0.2)"} />
+                    </div>
+
+                    <div
+                      onClick={() => setAfternoonSlot(!afternoonSlot)}
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "12px",
+                        border: "1px solid",
+                        borderColor: afternoonSlot ? "rgba(52, 211, 153, 0.4)" : "rgba(255,255,255,0.08)",
+                        background: afternoonSlot ? "rgba(16, 185, 129, 0.12)" : "rgba(4, 13, 9, 0.6)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                        <Coffee size={18} color="#34d399" />
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.9rem" }}>Afternoon Slots</div>
+                          <div style={{ fontSize: "0.78rem", color: "rgba(226, 237, 231, 0.65)" }}>02:00 PM – 05:00 PM</div>
+                        </div>
+                      </div>
+                      <CheckCircle2 size={18} color={afternoonSlot ? "#34d399" : "rgba(255,255,255,0.2)"} />
+                    </div>
+
+                    <div
+                      onClick={() => setEveningSlot(!eveningSlot)}
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "12px",
+                        border: "1px solid",
+                        borderColor: eveningSlot ? "rgba(52, 211, 153, 0.4)" : "rgba(255,255,255,0.08)",
+                        background: eveningSlot ? "rgba(16, 185, 129, 0.12)" : "rgba(4, 13, 9, 0.6)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                        <Moon size={18} color="#34d399" />
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.9rem" }}>Evening Slots</div>
+                          <div style={{ fontSize: "0.78rem", color: "rgba(226, 237, 231, 0.65)" }}>06:00 PM – 08:30 PM</div>
+                        </div>
+                      </div>
+                      <CheckCircle2 size={18} color={eveningSlot ? "#34d399" : "rgba(255,255,255,0.2)"} />
+                    </div>
+
+                    <div
+                      onClick={() => setNightSlot(!nightSlot)}
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "12px",
+                        border: "1px solid",
+                        borderColor: nightSlot ? "rgba(52, 211, 153, 0.4)" : "rgba(255,255,255,0.08)",
+                        background: nightSlot ? "rgba(16, 185, 129, 0.12)" : "rgba(4, 13, 9, 0.6)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                        <Moon size={18} color="#34d399" />
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.9rem" }}>Night Slots</div>
+                          <div style={{ fontSize: "0.78rem", color: "rgba(226, 237, 231, 0.65)" }}>09:00 PM – 11:00 PM</div>
+                        </div>
+                      </div>
+                      <CheckCircle2 size={18} color={nightSlot ? "#34d399" : "rgba(255,255,255,0.2)"} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Instant Booking Toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", marginTop: "1rem" }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.92rem", marginBottom: "2px" }}>
+                      ⚡ Instant Booking Confirmation
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.65)" }}>
+                      Automatically accept lessons when a learner books an available slot.
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={instantBooking}
+                    onChange={(e) => setInstantBooking(e.target.checked)}
+                    style={{ width: "20px", height: "20px", accentColor: "#34d399", cursor: "pointer" }}
+                  />
+                </div>
+
+                {/* Vacation Mode Toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.92rem", marginBottom: "2px" }}>
+                      🏖️ Vacation / Out of Office Mode
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.65)" }}>
+                      Temporarily pause new booking requests on the directory.
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={vacationMode}
+                    onChange={(e) => setVacationMode(e.target.checked)}
+                    style={{ width: "20px", height: "20px", accentColor: "#34d399", cursor: "pointer" }}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => alert("Schedule and availability preferences saved successfully!")}
+                  className={styles.saveBtn}
+                  style={{ marginTop: "1rem" }}
+                >
+                  <Save size={16} />
+                  <span>Save Availability Schedule</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SKILLS & PRICING */}
           {activeTab === "skills" && (
             <div className={styles.cardSection}>
               <div className={styles.cardSectionTitleRow}>
@@ -600,7 +840,7 @@ export default function MentorStudioPage() {
                 </div>
 
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>Availability Schedule</label>
+                  <label className={styles.fieldLabel}>Availability Tag</label>
                   <select
                     value={editAvailability}
                     onChange={(e) => setEditAvailability(e.target.value)}
@@ -637,7 +877,7 @@ export default function MentorStudioPage() {
             </div>
           )}
 
-          {/* TAB 4: EARNINGS & PAYOUTS */}
+          {/* TAB 5: EARNINGS & PAYOUTS */}
           {activeTab === "earnings" && (
             <div>
               <div className={styles.metricsGrid}>
@@ -702,7 +942,7 @@ export default function MentorStudioPage() {
             </div>
           )}
 
-          {/* TAB 5: PROFILE & BIO SETTINGS */}
+          {/* TAB 6: PROFILE & BIO SETTINGS */}
           {activeTab === "profile" && (
             <div className={styles.cardSection}>
               <div className={styles.cardSectionTitleRow}>

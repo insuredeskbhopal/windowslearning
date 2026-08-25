@@ -469,7 +469,7 @@ function MentorsSearchContent() {
                     {/* Top Row: Avatar, Identity, and Rate */}
                     <div className={styles.cardTopRow}>
                       <div className={styles.mentorIdentity}>
-                        <div className={styles.avatarWrapper}>
+                        <Link href={`/mentors/${mentor.slug}`} className={styles.avatarWrapper} style={{ textDecoration: "none" }}>
                           <Image
                             src={mentor.avatar}
                             alt={mentor.name}
@@ -481,11 +481,13 @@ function MentorsSearchContent() {
                           {mentor.availability === "Available Today" && (
                             <div className={styles.onlineStatusDot} title="Online & Available Today" />
                           )}
-                        </div>
+                        </Link>
 
                         <div className={styles.mentorNameRole}>
                           <div className={styles.mentorName}>
-                            <span>{mentor.name}</span>
+                            <Link href={`/mentors/${mentor.slug}`} style={{ color: "#ffffff", textDecoration: "none" }}>
+                              {mentor.name}
+                            </Link>
                             <span className={styles.verifiedBadge} title="Verified Teacher">
                               <ShieldCheck size={18} />
                             </span>
@@ -529,8 +531,12 @@ function MentorsSearchContent() {
                       <div className={styles.statsCluster}>
                         <div className={styles.statItem}>
                           <Star size={14} fill="#fbbf24" color="#fbbf24" />
-                          <span style={{ color: "#ffffff", fontWeight: 700 }}>{mentor.rating}</span>
-                          <span>({mentor.reviewsCount} reviews)</span>
+                          <span style={{ color: "#ffffff", fontWeight: 700 }}>
+                            {mentor.reviewsCount > 0 ? mentor.rating : "New"}
+                          </span>
+                          <span>
+                            ({mentor.reviewsCount > 0 ? `${mentor.reviewsCount} reviews` : "New Mentor"})
+                          </span>
                         </div>
 
                         <div className={styles.statItem}>
@@ -544,15 +550,35 @@ function MentorsSearchContent() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        className={styles.bookBtn}
-                        onClick={() => handleOpenBooking(mentor)}
-                      >
-                        <Calendar size={15} />
-                        <span>Book 1-on-1 Lesson</span>
-                        <ArrowRight size={14} />
-                      </button>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                        <Link
+                          href={`/mentors/${mentor.slug}`}
+                          style={{
+                            padding: "0.65rem 0.95rem",
+                            borderRadius: "10px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            color: "rgba(226, 237, 231, 0.85)",
+                            fontSize: "0.82rem",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.3rem",
+                          }}
+                        >
+                          <span>Profile</span>
+                        </Link>
+
+                        <button
+                          type="button"
+                          className={styles.bookBtn}
+                          onClick={() => handleOpenBooking(mentor)}
+                        >
+                          <Calendar size={14} />
+                          <span>Book 1-on-1</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

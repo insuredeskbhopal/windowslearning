@@ -1,0 +1,326 @@
+.profilePage {
+  min-height: 100vh;
+  background-color: #020705;
+  color: #ffffff;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.ambientGlow {
+  position: fixed;
+  top: 5%;
+  left: 25%;
+  width: 700px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(226, 237, 231, 0.7);
+  font-size: 0.88rem;
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: #34d399;
+}
+
+/* ----------------------------------------------------
+   Hero Profile Header
+   ---------------------------------------------------- */
+.heroCard {
+  background: linear-gradient(145deg, rgba(12, 29, 21, 0.85) 0%, rgba(5, 16, 11, 0.95) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 24px;
+  padding: 2.5rem;
+  margin-bottom: 2.5rem;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.heroLeft {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.avatarWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #34d399;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.avatarFallback {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px solid #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #34d399;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.verifiedBadge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #030a07;
+  border-radius: 50%;
+  padding: 2px;
+  display: flex;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.name {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.roleTitle {
+  font-size: 1.1rem;
+  color: #34d399;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.88rem;
+  color: rgba(226, 237, 231, 0.75);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.heroRight {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.priceTag {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #34d399;
+  font-family: var(--font-mono);
+}
+
+.availabilityPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 9999px;
+  color: #34d399;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------
+   2-Column Grid Details Layout
+   ---------------------------------------------------- */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.sectionBox {
+  background: linear-gradient(145deg, rgba(12, 29, 21, 0.85) 0%, rgba(5, 16, 11, 0.95) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(12px);
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem 0;
+}
+
+.bioText {
+  font-size: 0.95rem;
+  color: rgba(226, 237, 231, 0.85);
+  line-height: 1.7;
+  white-space: pre-line;
+  margin: 0;
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.skillPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #34d399;
+}
+
+/* ----------------------------------------------------
+   Sticky Booking Widget
+   ---------------------------------------------------- */
+.stickyBookingWidget {
+  position: sticky;
+  top: 6rem;
+  background: linear-gradient(145deg, rgba(15, 36, 26, 0.95) 0%, rgba(8, 20, 14, 0.98) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.widgetTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.4rem 0;
+}
+
+.widgetSubtitle {
+  font-size: 0.85rem;
+  color: rgba(226, 237, 231, 0.7);
+  margin: 0 0 1.5rem 0;
+}
+
+.bookingForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fieldLabel {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: rgba(226, 237, 231, 0.75);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(4, 13, 9, 0.8);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #34d399;
+}
+
+.bookNowBtn {
+  width: 100%;
+  padding: 0.9rem;
+  background: #34d399;
+  color: #030a07;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.bookNowBtn:hover {
+  background: #10b981;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .heroCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .heroRight {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+  .stickyBookingWidget {
+    position: static;
+  }
+}
