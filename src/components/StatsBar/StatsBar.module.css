@@ -1,0 +1,82 @@
+.statsBar {
+  width: 100%;
+  position: relative;
+  z-index: 20;
+  padding: 3rem 2rem;
+  box-sizing: border-box;
+  background: rgba(4, 15, 10, 0.75);
+  border-top: 1px solid rgba(52, 211, 153, 0.15);
+  border-bottom: 1px solid rgba(52, 211, 153, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.iconBox {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34d399;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.statItem:hover .iconBox {
+  background: rgba(16, 185, 129, 0.2);
+  transform: scale(1.06);
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.numberValue {
+  font-family: var(--font-mono), monospace;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.numberHighlight {
+  color: #34d399;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: rgba(226, 237, 231, 0.65);
+  margin-top: 0.2rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .statsBar {
+    padding: 2.5rem 1.25rem;
+  }
+}

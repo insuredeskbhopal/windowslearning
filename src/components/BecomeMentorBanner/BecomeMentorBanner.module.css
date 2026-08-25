@@ -1,0 +1,194 @@
+.becomeMentorSection {
+  width: 100%;
+  position: relative;
+  z-index: 20;
+  padding: 6rem 2rem 7rem 2rem;
+  box-sizing: border-box;
+  background: 
+    radial-gradient(ellipse at 50% 50%, rgba(217, 119, 6, 0.1) 0%, transparent 60%),
+    linear-gradient(180deg, #020705 0%, #081a13 50%, #020705 100%);
+  display: flex;
+  justify-content: center;
+}
+
+.bannerCard {
+  width: 100%;
+  max-width: 1280px;
+  border-radius: 32px;
+  background: 
+    radial-gradient(ellipse at 90% 20%, rgba(52, 211, 153, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 10% 80%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
+    linear-gradient(145deg, rgba(14, 34, 25, 0.85) 0%, rgba(6, 19, 13, 0.95) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 4rem 3.5rem;
+  box-sizing: border-box;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 30px 60px -15px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(16, 185, 129, 0.15);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.95rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: #ffffff;
+  margin: 0 0 1.25rem 0;
+}
+
+.titleHighlight {
+  background: linear-gradient(135deg, #ffffff 20%, #34d399 70%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(226, 237, 231, 0.75);
+  margin: 0 0 2rem 0;
+}
+
+.perksGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.perkItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+  color: rgba(226, 237, 231, 0.85);
+}
+
+.perkItem svg {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+/* Action Form Box */
+.actionBox {
+  background: rgba(4, 15, 10, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+}
+
+.actionBoxTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.actionBoxSubtitle {
+  font-size: 0.85rem;
+  color: rgba(226, 237, 231, 0.65);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.applyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #34d399;
+  color: #030a07;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.95rem 1.75rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(52, 211, 153, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.applyBtn:hover {
+  background: #6ee7b7;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(52, 211, 153, 0.45);
+}
+
+/* Modal */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 560px;
+  background: #061811;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-sizing: border-box;
+  position: relative;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
+}
+
+.closeModalBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media (max-width: 960px) {
+  .bannerCard {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 1.75rem;
+  }
+}

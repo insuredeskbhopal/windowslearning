@@ -1,0 +1,228 @@
+.mainContainer {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #030a07;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Full-Screen Continuous Hero Image covering Navbar & Hero Section */
+.fullScreenImageBackdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  min-height: 720px;
+  max-height: 1080px;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fullScreenImage {
+  object-fit: cover;
+  object-position: center 35%;
+  opacity: 0.92;
+  filter: saturate(1.2) brightness(1.0);
+}
+
+.fullScreenImageOverlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 50% 50%, rgba(5, 17, 12, 0.2) 0%, rgba(3, 11, 8, 0.5) 60%, rgba(1, 5, 3, 0.9) 95%),
+    linear-gradient(to bottom, rgba(5, 17, 12, 0.2) 0%, transparent 20%, transparent 60%, #020705 100%);
+  pointer-events: none;
+}
+
+/* Ambient glow accents across full viewport */
+.ambientGlowTop {
+  position: absolute;
+  top: -150px;
+  left: 25%;
+  width: 800px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.05) 50%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ambientGlowAmber {
+  position: absolute;
+  top: 50px;
+  right: 15%;
+  width: 700px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, rgba(180, 83, 9, 0.03) 60%, transparent 80%);
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Center Hero Section */
+.heroSection {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 7.5rem 2rem 5rem 2rem;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+}
+
+.heroGlowBackdrop {
+  position: absolute;
+  width: 700px;
+  height: 350px;
+  background: radial-gradient(ellipse, rgba(52, 211, 153, 0.2) 0%, rgba(217, 119, 6, 0.08) 50%, transparent 75%);
+  filter: blur(70px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Tagline: Learn. Connect. Grow. */
+.heroTagline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(0.72rem, 1.1vw, 0.82rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(226, 237, 231, 0.88);
+  padding: 0.2rem 0.6rem;
+  margin-top: 0.2rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.taglineDot {
+  display: inline-block;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.taglineWord {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.taglineWord:hover {
+  color: #34d399;
+  transform: translateY(-1px);
+}
+
+/* Hero Action Buttons */
+.heroButtonRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2rem;
+  z-index: 15;
+  flex-wrap: wrap;
+}
+
+.primaryHeroBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background: rgba(230, 240, 234, 0.95);
+  color: #0b1812;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 0.8rem 1.85rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 
+    0 10px 25px -3px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.primaryHeroBtn:hover {
+  background: #ffffff;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 14px 32px -4px rgba(52, 211, 153, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+  color: #050d09;
+}
+
+.primaryHeroBtn:active {
+  transform: scale(0.98);
+}
+
+.secondaryHeroBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background: rgba(13, 27, 20, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #e2ede7;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 0.8rem 1.85rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.secondaryHeroBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.secondaryHeroBtn:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .heroTagline {
+    gap: 0.75rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+
+  .heroButtonRow {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    gap: 0.85rem;
+  }
+
+  .primaryHeroBtn,
+  .secondaryHeroBtn {
+    width: 100%;
+  }
+}
+

@@ -1,0 +1,305 @@
+.mentorSection {
+  width: 100%;
+  position: relative;
+  z-index: 20;
+  padding: 7rem 2rem 8rem 2rem;
+  box-sizing: border-box;
+  background: 
+    radial-gradient(ellipse at 70% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 70%, rgba(217, 119, 6, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #020705 0%, #061610 50%, #020705 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.ambientGlow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+  filter: blur(120px);
+  pointer-events: none;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header */
+.sectionHeader {
+  text-align: center;
+  max-width: 780px;
+  margin-bottom: 3.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.95rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  color: #34d399;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.title {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(2.2rem, 3.8vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: #ffffff;
+  margin: 0 0 1.15rem 0;
+}
+
+.titleHighlight {
+  background: linear-gradient(135deg, #ffffff 20%, #34d399 70%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(226, 237, 231, 0.7);
+  margin: 0;
+}
+
+/* Mentor Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 2rem;
+  width: 100%;
+}
+
+.mentorCard {
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(12, 29, 21, 0.75) 0%, rgba(5, 17, 12, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mentorCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(16, 185, 129, 0.12);
+}
+
+.cardGlow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.7), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mentorCard:hover .cardGlow {
+  opacity: 1;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.avatarWrapper {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 2px solid rgba(52, 211, 153, 0.4);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.onlineDot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #34d399;
+  border: 2px solid #061810;
+  box-shadow: 0 0 6px #34d399;
+}
+
+.mentorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.mentorName {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mentorRole {
+  font-size: 0.82rem;
+  color: #34d399;
+  font-weight: 500;
+}
+
+.mentorCompany {
+  font-size: 0.75rem;
+  color: rgba(226, 237, 231, 0.6);
+}
+
+.bio {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: rgba(226, 237, 231, 0.7);
+  margin: 0 0 1.25rem 0;
+}
+
+/* Skills Chips */
+.chipsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.chip {
+  font-size: 0.72rem;
+  font-family: var(--font-mono), monospace;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  color: #a7f3d0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+
+/* Card Footer */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: auto;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: rgba(226, 237, 231, 0.7);
+}
+
+.bookBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #34d399;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: gap 0.2s ease, color 0.2s ease;
+}
+
+.mentorCard:hover .bookBtn {
+  color: #6ee7b7;
+  gap: 0.6rem;
+}
+
+/* Explore More Mentors Button */
+.exploreRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4rem;
+  width: 100%;
+}
+
+.exploreBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #34d399;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.95rem 2.6rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.5),
+    0 0 25px rgba(16, 185, 129, 0.15);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.exploreBtn:hover {
+  background: #34d399;
+  color: #04100b;
+  border-color: #34d399;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 15px 35px -5px rgba(52, 211, 153, 0.45);
+}
+
+@media (max-width: 768px) {
+  .mentorSection {
+    padding: 4rem 1.25rem 6rem 1.25rem;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
