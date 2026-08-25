@@ -2,22 +2,75 @@
 
 import React, { useState, useMemo, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, Loader2, Sparkles, ShieldCheck, Clock, AlertCircle, MapPin, Briefcase, Languages } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, Sparkles, ShieldCheck, Clock, AlertCircle, MapPin, Briefcase, Languages, Plus, X } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
 
-const SKILL_TOPICS = [
-  { id: "home-cooking-recipes", label: "🍳 Home Cooking & Recipes" },
-  { id: "cake-baking-pastry", label: "🎂 Cake Baking & Pastries" },
-  { id: "tailoring-dress-making", label: "✂️ Tailoring & Dress Making" },
-  { id: "vedic-maths-fast-calculation", label: "📐 Vedic Maths & Speed Math" },
-  { id: "biology-human-body-basics", label: "🧬 Biology & Medical Basics" },
-  { id: "spoken-english-confidence", label: "🗣️ Spoken English & Fluency" },
-  { id: "computer-basics-ms-excel", label: "💻 Computer Basics & Excel" },
-  { id: "mobile-repairing-electronics", label: "📱 Mobile Repair & Gadgets" },
-  { id: "yoga-daily-fitness-diet", label: "🧘 Yoga & Health Guidance" },
-  { id: "small-business-accounts-tally", label: "📊 Business Accounts & Tally" },
+const COMPREHENSIVE_SKILL_TOPICS = [
+  // 1. Food & Cooking
+  { id: "home-cooking-recipes", label: "🍳 Home Cooking & Traditional Dishes", cat: "Food & Cooking" },
+  { id: "cake-baking-pastry", label: "🎂 Cake Baking & Pastries", cat: "Food & Cooking" },
+  { id: "street-food-snacks", label: "🥟 Chaat, Samosa & Street Snacks", cat: "Food & Cooking" },
+  { id: "pickles-masalas-preserves", label: "🌶️ Homemade Pickles & Spices", cat: "Food & Cooking" },
+  { id: "cloud-kitchen-home-baking", label: "👩‍🍳 Cloud Kitchen & Food Business", cat: "Food & Cooking" },
+
+  // 2. Tailoring, Clothing & Fashion
+  { id: "tailoring-dress-making", label: "✂️ Tailoring & Blouse Cutting", cat: "Tailoring & Fashion" },
+  { id: "suit-salwar-dressmaking", label: "👗 Kurti, Suit & Salwar Stitching", cat: "Tailoring & Fashion" },
+  { id: "aari-embroidery-crafts", label: "🪡 Aari Work & Hand Embroidery", cat: "Tailoring & Fashion" },
+  { id: "saree-draping-styling", label: "🥻 Saree Draping & Fashion Styling", cat: "Tailoring & Fashion" },
+  { id: "jewelry-making-beadwork", label: "💍 Handmade Jewelry & Beadwork", cat: "Tailoring & Fashion" },
+  { id: "crochet-knitting-wool", label: "🧶 Crochet & Knitting", cat: "Tailoring & Fashion" },
+
+  // 3. Academics, Science & Medical
+  { id: "vedic-maths-fast-calculation", label: "📐 Vedic Maths & Speed Calculation", cat: "Academics & Science" },
+  { id: "biology-human-body-basics", label: "🧬 Human Biology & Physiology", cat: "Academics & Science" },
+  { id: "medical-nursing-first-aid", label: "🩺 First Aid, Home Nursing & Health", cat: "Academics & Science" },
+  { id: "school-physics-chemistry", label: "🔬 Physics & Chemistry Experiments", cat: "Academics & Science" },
+  { id: "exam-preparation-coaching", label: "📚 Competitive Exam Strategies", cat: "Academics & Science" },
+
+  // 4. Languages & Public Speaking
+  { id: "spoken-english-confidence", label: "🗣️ Spoken English & Fluency", cat: "Languages & Speaking" },
+  { id: "public-speaking-personality", label: "🎙️ Public Speaking & Confidence", cat: "Languages & Speaking" },
+  { id: "hindi-fluency-writing", label: "📖 Hindi Fluency & Literature", cat: "Languages & Speaking" },
+  { id: "foreign-languages-french-german", label: "🌍 Foreign Languages (French / German)", cat: "Languages & Speaking" },
+
+  // 5. Computers, Software & Tech
+  { id: "computer-basics-ms-excel", label: "💻 Computer Basics & MS Excel", cat: "Tech & Computers" },
+  { id: "smartphone-internet-skills", label: "📱 Smartphone, WhatsApp & Digital Pay", cat: "Tech & Computers" },
+  { id: "canva-graphic-design", label: "🎨 Graphic Design with Canva & AI", cat: "Tech & Computers" },
+  { id: "video-editing-reels", label: "🎬 Video Editing (CapCut/Premiere)", cat: "Tech & Computers" },
+  { id: "web-development-coding", label: "⌨️ Web Development & Programming", cat: "Tech & Computers" },
+  { id: "data-entry-typing-speed", label: "⌨️ Hindi/English Typing & Office Work", cat: "Tech & Computers" },
+
+  // 6. Vocational, Repairs & Home Trades
+  { id: "mobile-repairing-electronics", label: "🔧 Mobile & Smartphone Repair", cat: "Repairs & Trades" },
+  { id: "laptop-computer-hardware", label: "💻 Laptop & Hardware Troubleshooting", cat: "Repairs & Trades" },
+  { id: "home-electricals-wiring", label: "💡 Home Electricals & Appliance Repair", cat: "Repairs & Trades" },
+  { id: "plumbing-home-maintenance", label: "🚰 Plumbing & Home DIY Repairs", cat: "Repairs & Trades" },
+  { id: "carpentry-woodwork-craft", label: "🪚 Carpentry & Furniture Making", cat: "Repairs & Trades" },
+
+  // 7. Health, Yoga & Fitness
+  { id: "yoga-daily-fitness-diet", label: "🧘 Daily Yoga, Asanas & Pranayama", cat: "Health & Fitness" },
+  { id: "home-workout-weightloss", label: "🏋️ Home Workouts & Weight Loss", cat: "Health & Fitness" },
+  { id: "diet-nutrition-ayurveda", label: "🥗 Healthy Diet & Ayurvedic Nutrition", cat: "Health & Fitness" },
+  { id: "physiotherapy-pain-relief", label: "💆 Joint & Back Pain Exercise Relief", cat: "Health & Fitness" },
+
+  // 8. Business, Finance & Accounting
+  { id: "small-business-accounts-tally", label: "📊 Business Accounts, Tally & GST", cat: "Business & Finance" },
+  { id: "stock-market-investing-basics", label: "📈 Stock Market & Mutual Funds 101", cat: "Business & Finance" },
+  { id: "retail-kirana-store-management", label: "🏪 Retail & Store Business Strategy", cat: "Business & Finance" },
+  { id: "home-freelance-earning", label: "💼 Freelancing & Remote Work from Home", cat: "Business & Finance" },
+
+  // 9. Beauty, Art, Crafts & Music
+  { id: "mehndi-henna-design", label: "🌿 Bridal Mehndi & Henna Art", cat: "Beauty & Arts" },
+  { id: "makeup-skincare-hairstyling", label: "💄 Bridal Makeup & Skincare Secrets", cat: "Beauty & Arts" },
+  { id: "drawing-painting-sketching", label: "🖌️ Drawing, Sketching & Oil Painting", cat: "Beauty & Arts" },
+  { id: "guitar-singing-harmonium", label: "🎸 Singing, Guitar & Harmonium", cat: "Beauty & Arts" },
+  { id: "candle-soap-making", label: "🕯️ Handmade Soap & Scented Candles", cat: "Beauty & Arts" },
+  { id: "organic-gardening-farming", label: "🌱 Terrace Gardening & Organic Farming", cat: "Beauty & Arts" },
+  { id: "astrology-vastu-shastra", label: "🔮 Vedic Astrology & Vastu Shastra", cat: "Beauty & Arts" },
 ];
 
 const POPULAR_CITIES = [
@@ -70,9 +123,17 @@ const POPULAR_TITLES = [
   "Yoga & Daily Fitness Instructor",
   "Small Business Accounts & Tally Tutor",
   "Guitar & Classical Music Teacher",
-  "Art, Drawing & Sketching Instructor",
-  "Handicrafts & Embroidery Artist",
-  "Organic Gardening & Plant Care Guide",
+  "Bridal Mehndi & Henna Artist",
+  "Professional Makeup & Hair Stylist",
+  "Electrician & Home Appliance Technician",
+  "Plumbing & Home Maintenance Expert",
+  "Terrace Gardening & Organic Plant Expert",
+  "Drawing, Sketching & Acrylic Painting Artist",
+  "Handmade Jewelry & Craft Designer",
+  "Cloud Kitchen Chef & Food Entrepreneur",
+  "Stock Market & Personal Finance Coach",
+  "Handwriting & Calligraphy Instructor",
+  "Astrology & Kundali Reading Guide",
 ];
 
 const POPULAR_LANGUAGES = [
@@ -101,6 +162,10 @@ function MentorOnboardingContent() {
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
   const [teachingSkills, setTeachingSkills] = useState<string[]>([]);
+  const [customSkillInput, setCustomSkillInput] = useState("");
+  const [customSkills, setCustomSkills] = useState<{ id: string; label: string; cat: string }[]>([]);
+  const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>("All");
+
   const [experienceYears, setExperienceYears] = useState(1);
   const [hourlyRate, setHourlyRate] = useState<number | string>(200);
   const [isFreeCommunity, setIsFreeCommunity] = useState(false);
@@ -114,6 +179,20 @@ function MentorOnboardingContent() {
   const [showTitleSuggestions, setShowTitleSuggestions] = useState(false);
   const [showLangSuggestions, setShowLangSuggestions] = useState(false);
 
+  const allSkillTopics = useMemo(() => {
+    return [...customSkills, ...COMPREHENSIVE_SKILL_TOPICS];
+  }, [customSkills]);
+
+  const categoryList = useMemo(() => {
+    const cats = new Set(COMPREHENSIVE_SKILL_TOPICS.map((s) => s.cat));
+    return ["All", ...Array.from(cats)];
+  }, []);
+
+  const filteredSkillTopics = useMemo(() => {
+    if (selectedCategoryTab === "All") return allSkillTopics;
+    return allSkillTopics.filter((s) => s.cat === selectedCategoryTab);
+  }, [allSkillTopics, selectedCategoryTab]);
+
   const filteredCities = useMemo(() => {
     if (!location.trim()) return [];
     const q = location.toLowerCase();
@@ -123,7 +202,8 @@ function MentorOnboardingContent() {
   const filteredTitles = useMemo(() => {
     if (!title.trim()) return [];
     const q = title.toLowerCase();
-    return POPULAR_TITLES.filter((t) => t.toLowerCase().includes(q)).slice(0, 5);
+    const matches = POPULAR_TITLES.filter((t) => t.toLowerCase().includes(q)).slice(0, 5);
+    return matches;
   }, [title]);
 
   const filteredLanguages = useMemo(() => {
@@ -138,6 +218,22 @@ function MentorOnboardingContent() {
     } else {
       setTeachingSkills([...teachingSkills, id]);
     }
+  };
+
+  const handleAddCustomSkill = () => {
+    if (!customSkillInput.trim()) return;
+    const clean = customSkillInput.trim();
+    const id = clean.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+    const newSkill = {
+      id,
+      label: `✨ ${clean}`,
+      cat: "Custom Skills",
+    };
+
+    setCustomSkills((prev) => [newSkill, ...prev]);
+    setTeachingSkills((prev) => [...prev, id]);
+    setCustomSkillInput("");
   };
 
   const handleStep1Next = () => {
@@ -214,7 +310,7 @@ function MentorOnboardingContent() {
         ctaHref="/auth/login"
       />
 
-      <div className={styles.card}>
+      <div className={styles.card} style={{ maxWidth: step === 2 ? "760px" : "680px" }}>
         {/* Progress Bar */}
         <div className={styles.progressBar}>
           <div className={`${styles.progressStep} ${step >= 1 ? styles.progressStepActive : ""}`} />
@@ -236,11 +332,11 @@ function MentorOnboardingContent() {
             <div className={styles.stepBadge}>Step 1 of 4 • Basic Profile</div>
             <h1 className={styles.title}>Tell us about your teaching profile</h1>
             <p className={styles.subtitle}>
-              Enter your teaching title, city, and practical experience. Suggestions appear as you type.
+              Enter any practical skill, trade, craft, or academic subject you want to mentor.
             </p>
 
             <div className={styles.formGrid}>
-              {/* Professional Title with Autocomplete */}
+              {/* Professional Title with Autocomplete & Custom Addition */}
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>Your Professional Title / Role</label>
                 <div className={styles.inputContainer}>
@@ -253,13 +349,28 @@ function MentorOnboardingContent() {
                     }}
                     onFocus={() => setShowTitleSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowTitleSuggestions(false), 200)}
-                    placeholder="e.g. Master Tailor, Home Chef, Speed Maths Coach..."
+                    placeholder="Type anything (e.g. Master Tailor, Home Baker, Electrician, Vedic Maths...)"
                     className={styles.input}
                     required
                   />
 
-                  {showTitleSuggestions && filteredTitles.length > 0 && (
+                  {showTitleSuggestions && title.trim().length > 0 && (
                     <div className={styles.suggestionsDropdown}>
+                      {/* Option to use custom typed title */}
+                      <div
+                        className={styles.suggestionItem}
+                        onMouseDown={() => {
+                          setShowTitleSuggestions(false);
+                        }}
+                        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#34d399", fontWeight: 600 }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Sparkles size={14} color="#34d399" />
+                          <span>Use &ldquo;{title}&rdquo; as my custom title</span>
+                        </div>
+                        <span style={{ fontSize: "0.72rem" }}>Custom</span>
+                      </div>
+
                       {filteredTitles.map((item, idx) => (
                         <div
                           key={idx}
@@ -299,8 +410,22 @@ function MentorOnboardingContent() {
                     required
                   />
 
-                  {showCitySuggestions && filteredCities.length > 0 && (
+                  {showCitySuggestions && location.trim().length > 0 && (
                     <div className={styles.suggestionsDropdown}>
+                      <div
+                        className={styles.suggestionItem}
+                        onMouseDown={() => {
+                          setShowCitySuggestions(false);
+                        }}
+                        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#34d399", fontWeight: 600 }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <MapPin size={14} color="#34d399" />
+                          <span>Use &ldquo;{location}&rdquo;</span>
+                        </div>
+                        <span style={{ fontSize: "0.72rem" }}>Custom</span>
+                      </div>
+
                       {filteredCities.map((item, idx) => (
                         <div
                           key={idx}
@@ -328,7 +453,7 @@ function MentorOnboardingContent() {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Describe what practical skills you teach and your teaching approach..."
+                  placeholder="Describe your practical experience, techniques you teach, and how you guide learners step-by-step..."
                   className={styles.textarea}
                   required
                 />
@@ -349,17 +474,87 @@ function MentorOnboardingContent() {
           </div>
         )}
 
-        {/* Step 2: Skills & Experience */}
+        {/* Step 2: Comprehensive Skills & Custom Skill Input */}
         {step === 2 && (
           <div>
-            <div className={styles.stepBadge}>Step 2 of 4 • Skills & Experience</div>
+            <div className={styles.stepBadge}>Step 2 of 4 • Skills & Expertise</div>
             <h1 className={styles.title}>What skills can you teach?</h1>
             <p className={styles.subtitle}>
-              Select one or more topics you have practical experience in.
+              Pick from our universal categories, or type and add your own unique custom skill below!
             </p>
 
-            <div className={styles.chipsGrid} style={{ marginBottom: "1.5rem" }}>
-              {SKILL_TOPICS.map((topic) => (
+            {/* Custom Skill Input Box */}
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem" }}>
+              <input
+                type="text"
+                value={customSkillInput}
+                onChange={(e) => setCustomSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddCustomSkill();
+                  }
+                }}
+                placeholder="Type any unique skill (e.g. Pottery, Drone Flying, Chess, French)..."
+                className={styles.input}
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomSkill}
+                style={{
+                  background: "rgba(16, 185, 129, 0.18)",
+                  border: "1px solid #34d399",
+                  color: "#34d399",
+                  borderRadius: "12px",
+                  padding: "0 1.25rem",
+                  fontWeight: 700,
+                  fontSize: "0.88rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  cursor: "pointer",
+                }}
+              >
+                <Plus size={16} />
+                <span>Add Skill</span>
+              </button>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "1.25rem" }}>
+              {categoryList.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategoryTab(cat)}
+                  style={{
+                    padding: "0.35rem 0.75rem",
+                    borderRadius: "9999px",
+                    border: "1px solid",
+                    borderColor: selectedCategoryTab === cat ? "#34d399" : "rgba(255,255,255,0.1)",
+                    background: selectedCategoryTab === cat ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.03)",
+                    color: selectedCategoryTab === cat ? "#ffffff" : "rgba(226, 237, 231, 0.7)",
+                    fontSize: "0.78rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Skills Grid */}
+            <div
+              className={styles.chipsGrid}
+              style={{
+                maxHeight: "260px",
+                overflowY: "auto",
+                paddingRight: "4px",
+                marginBottom: "1.5rem",
+              }}
+            >
+              {filteredSkillTopics.map((topic) => (
                 <button
                   key={topic.id}
                   type="button"
@@ -377,8 +572,16 @@ function MentorOnboardingContent() {
               ))}
             </div>
 
+            {/* Selected Skills Summary */}
+            <div style={{ fontSize: "0.82rem", color: "rgba(226, 237, 231, 0.7)", marginBottom: "1.25rem" }}>
+              Selected ({teachingSkills.length}):{" "}
+              <strong style={{ color: "#34d399" }}>
+                {teachingSkills.length > 0 ? teachingSkills.join(", ") : "None"}
+              </strong>
+            </div>
+
             <div className={styles.fieldGroup} style={{ marginBottom: "1.5rem" }}>
-              <label className={styles.label}>Years of Experience</label>
+              <label className={styles.label}>Years of Experience in this Skill</label>
               <input
                 type="number"
                 value={experienceYears}
@@ -477,8 +680,22 @@ function MentorOnboardingContent() {
                     className={styles.input}
                   />
 
-                  {showLangSuggestions && filteredLanguages.length > 0 && (
+                  {showLangSuggestions && preferredLanguage.trim().length > 0 && (
                     <div className={styles.suggestionsDropdown}>
+                      <div
+                        className={styles.suggestionItem}
+                        onMouseDown={() => {
+                          setShowLangSuggestions(false);
+                        }}
+                        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#34d399", fontWeight: 600 }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Languages size={14} color="#34d399" />
+                          <span>Use &ldquo;{preferredLanguage}&rdquo;</span>
+                        </div>
+                        <span style={{ fontSize: "0.72rem" }}>Custom</span>
+                      </div>
+
                       {filteredLanguages.map((item, idx) => (
                         <div
                           key={idx}
