@@ -9,10 +9,14 @@ export async function GET(
     const { slug } = await context.params;
     const mentors = await getMentorsFromDb();
 
+    const s = decodeURIComponent(slug).toLowerCase();
     const mentor = mentors.find(
       (m) =>
-        m.slug.toLowerCase() === slug.toLowerCase() ||
-        m.id.toLowerCase() === slug.toLowerCase()
+        m.slug.toLowerCase() === s ||
+        m.id.toLowerCase() === s ||
+        m.slug.toLowerCase().includes(s) ||
+        s.includes(m.slug.toLowerCase()) ||
+        (m.id && s.includes(m.id.toLowerCase()))
     );
 
     if (!mentor) {
