@@ -626,3 +626,336 @@ export async function getBookingsForLearner(learnerId: string): Promise<DbBookin
   );
   return res.rows;
 }
+
+// ----------------------------------------------------
+// Teaching Sessions Handlers (Mentor Offerings)
+// ----------------------------------------------------
+
+export interface DbTeachingSession {
+  id: string;
+  mentorId: string;
+  mentorName?: string;
+  mentorAvatar?: string;
+  mentorTitle?: string;
+  mentorLocation?: string;
+  mentorSlug?: string;
+  title: string;
+  description: string;
+  learningOutcomes: string[];
+  skillSlug: string;
+  durationMinutes: number;
+  price: number;
+  level: string;
+  format: string;
+  isPublished: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function createTeachingSession(mentorId: string, data: {
+  title: string;
+  description: string;
+  learningOutcomes: string[];
+  skillSlug: string;
+  durationMinutes?: number;
+  price: number;
+  level?: string;
+  format?: string;
+}) {
+  const db = getDbPool();
+  const id = "sess_" + Math.random().toString(36).substring(2, 10);
+  const res = await db.query(
+    `INSERT INTO windowslearning."TeachingSession" (
+      "id", "mentorId", "title", "description", "learningOutcomes", "skillSlug", "durationMinutes", "price", "level", "format", "isPublished"
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true)
+    RETURNING *;`,
+    [
+      id,
+      mentorId,
+      data.title,
+      data.description,
+      JSON.stringify(data.learningOutcomes || []),
+      data.skillSlug,
+      data.durationMinutes || 60,
+      Number(data.price) || 500,
+      data.level || "All Levels",
+      data.format || "1:1 Live Online",
+    ]
+  );
+  return res.rows[0];
+}
+
+export async function getTeachingSessions(filters?: {
+  skill?: string;
+  level?: string;
+  mentorId?: string;
+}): Promise<DbTeachingSession[]> {
+  const db = getDbPool();
+  let query = `
+    SELECT 
+      ts.*,
+      u."name" as "mentorName",
+      COALESCE(u."avatarUrl", 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') as "mentorAvatar",
+      mp."title" as "mentorTitle",
+      mp."location" as "mentorLocation"
+    FROM windowslearning."TeachingSession" ts
+    JOIN windowslearning."User" u ON ts."mentorId" = u."id"
+    LEFT JOIN windowslearning."MentorProfile" mp ON ts."mentorId" = mp."userId"
+    WHERE ts."isPublished" = true
+  `;
+  const values: any[] = [];
+
+  if (filters?.mentorId) {
+    values.push(filters.mentorId);
+    query += ` AND ts."mentorId" = $${values.length}`;
+  }
+
+  if (filters?.skill && filters.skill !== "all") {
+    values.push(filters.skill);
+    query += ` AND ts."skillSlug" = $${values.length}`;
+  }
+
+  if (filters?.level && filters.level !== "all") {
+    values.push(filters.level);
+    query += ` AND LOWER(ts."level") = LOWER($${values.length})`;
+  }
+
+  query += ` ORDER BY ts."createdAt" DESC;`;
+
+  const res = await db.query(query, values);
+  return res.rows.map((row) => ({
+    ...row,
+    mentorSlug: (row.mentorName || "mentor").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + row.mentorId.substring(0, 5),
+    learningOutcomes: typeof row.learningOutcomes === "string" ? JSON.parse(row.learningOutcomes) : row.learningOutcomes || [],
+  }));
+}
+
+export async function getTeachingSessionsByMentorId(mentorId: string): Promise<DbTeachingSession[]> {
+  return getTeachingSessions({ mentorId });
+}
+
+export async function deleteTeachingSession(id: string, mentorId: string) {
+  const db = getDbPool();
+  const res = await db.query(
+    'DELETE FROM windowslearning."TeachingSession" WHERE "id" = $1 AND "mentorId" = $2 RETURNING *;',
+    [id, mentorId]
+  );
+  return res.rows[0];
+}
+
+// ----------------------------------------------------
+// Learning Gigs Handlers (Learner Requests)
+// ----------------------------------------------------
+
+export interface DbLearningGig {
+  id: string;
+  learnerId: string;
+  learnerName?: string;
+  learnerAvatar?: string;
+  title: string;
+  description: string;
+  skillSlug: string;
+  level: string;
+  durationMinutes: number;
+  budget: number;
+  preferredTime: string;
+  status: "OPEN" | "MATCHED" | "CLOSED";
+  createdAt: Date;
+  updatedAt: Date;
+  applicationsCount?: number;
+  applications?: DbGigApplication[];
+}
+
+export interface DbGigApplication {
+  id: string;
+  gigId: string;
+  mentorId: string;
+  mentorName?: string;
+  mentorAvatar?: string;
+  mentorTitle?: string;
+  proposedPrice: number;
+  message: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function createLearningGig(learnerId: string, data: {
+  title: string;
+  description: string;
+  skillSlug: string;
+  level?: string;
+  durationMinutes?: number;
+  budget: number;
+  preferredTime?: string;
+}) {
+  const db = getDbPool();
+  const id = "gig_" + Math.random().toString(36).substring(2, 10);
+  const res = await db.query(
+    `INSERT INTO windowslearning."LearningGig" (
+      "id", "learnerId", "title", "description", "skillSlug", "level", "durationMinutes", "budget", "preferredTime", "status"
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'OPEN')
+    RETURNING *;`,
+    [
+      id,
+      learnerId,
+      data.title,
+      data.description,
+      data.skillSlug,
+      data.level || "Beginner",
+      data.durationMinutes || 60,
+      Number(data.budget) || 300,
+      data.preferredTime || "Flexible / Evening",
+    ]
+  );
+  return res.rows[0];
+}
+
+export async function getLearningGigs(filters?: {
+  status?: string;
+  skillSlug?: string;
+  learnerId?: string;
+}): Promise<DbLearningGig[]> {
+  const db = getDbPool();
+  let query = `
+    SELECT 
+      g.*,
+      u."name" as "learnerName",
+      COALESCE(u."avatarUrl", 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') as "learnerAvatar",
+      (SELECT COUNT(*) FROM windowslearning."GigApplication" ga WHERE ga."gigId" = g."id") as "applicationsCount"
+    FROM windowslearning."LearningGig" g
+    JOIN windowslearning."User" u ON g."learnerId" = u."id"
+    WHERE 1=1
+  `;
+  const values: any[] = [];
+
+  if (filters?.learnerId) {
+    values.push(filters.learnerId);
+    query += ` AND g."learnerId" = $${values.length}`;
+  }
+
+  if (filters?.status) {
+    values.push(filters.status);
+    query += ` AND g."status" = $${values.length}`;
+  }
+
+  if (filters?.skillSlug && filters.skillSlug !== "all") {
+    values.push(filters.skillSlug);
+    query += ` AND g."skillSlug" = $${values.length}`;
+  }
+
+  query += ` ORDER BY g."createdAt" DESC;`;
+
+  const res = await db.query(query, values);
+  return res.rows.map((row) => ({
+    ...row,
+    applicationsCount: Number(row.applicationsCount) || 0,
+  }));
+}
+
+export async function getLearningGigById(id: string): Promise<DbLearningGig | null> {
+  const db = getDbPool();
+  const res = await db.query(
+    `SELECT 
+      g.*,
+      u."name" as "learnerName",
+      COALESCE(u."avatarUrl", 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') as "learnerAvatar"
+     FROM windowslearning."LearningGig" g
+     JOIN windowslearning."User" u ON g."learnerId" = u."id"
+     WHERE g."id" = $1 LIMIT 1;`,
+    [id]
+  );
+  if (res.rows.length === 0) return null;
+  const gig = res.rows[0];
+
+  const appRes = await db.query(
+    `SELECT 
+      ga.*,
+      u."name" as "mentorName",
+      COALESCE(u."avatarUrl", 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') as "mentorAvatar",
+      mp."title" as "mentorTitle"
+     FROM windowslearning."GigApplication" ga
+     JOIN windowslearning."User" u ON ga."mentorId" = u."id"
+     LEFT JOIN windowslearning."MentorProfile" mp ON ga."mentorId" = mp."userId"
+     WHERE ga."gigId" = $1
+     ORDER BY ga."createdAt" DESC;`,
+    [id]
+  );
+
+  return {
+    ...gig,
+    applicationsCount: appRes.rows.length,
+    applications: appRes.rows,
+  };
+}
+
+export async function applyToGig(gigId: string, mentorId: string, data: {
+  proposedPrice: number;
+  message: string;
+}) {
+  const db = getDbPool();
+  const id = "app_" + Math.random().toString(36).substring(2, 10);
+  const res = await db.query(
+    `INSERT INTO windowslearning."GigApplication" (
+      "id", "gigId", "mentorId", "proposedPrice", "message", "status"
+    ) VALUES ($1, $2, $3, $4, $5, 'PENDING')
+    RETURNING *;`,
+    [
+      id,
+      gigId,
+      mentorId,
+      Number(data.proposedPrice),
+      data.message,
+    ]
+  );
+  return res.rows[0];
+}
+
+export async function acceptGigApplication(gigId: string, applicationId: string, learnerId: string) {
+  const db = getDbPool();
+
+  // 1. Verify gig belongs to learner
+  const gigRes = await db.query(
+    'SELECT * FROM windowslearning."LearningGig" WHERE "id" = $1 AND "learnerId" = $2;',
+    [gigId, learnerId]
+  );
+  if (gigRes.rows.length === 0) {
+    throw new Error("Gig not found or unauthorized.");
+  }
+  const gig = gigRes.rows[0];
+
+  // 2. Fetch application
+  const appRes = await db.query(
+    'SELECT * FROM windowslearning."GigApplication" WHERE "id" = $1 AND "gigId" = $2;',
+    [applicationId, gigId]
+  );
+  if (appRes.rows.length === 0) {
+    throw new Error("Application not found.");
+  }
+  const app = appRes.rows[0];
+
+  // 3. Mark application as ACCEPTED
+  await db.query(
+    'UPDATE windowslearning."GigApplication" SET "status" = \'ACCEPTED\', "updatedAt" = NOW() WHERE "id" = $1;',
+    [applicationId]
+  );
+
+  // 4. Mark gig as MATCHED
+  await db.query(
+    'UPDATE windowslearning."LearningGig" SET "status" = \'MATCHED\', "updatedAt" = NOW() WHERE "id" = $1;',
+    [gigId]
+  );
+
+  // 5. Create a confirmed Booking in PostgreSQL
+  const booking = await createBooking({
+    learnerId: learnerId,
+    mentorId: app.mentorId,
+    skillSlug: gig.skillSlug,
+    topic: `Gig: ${gig.title}`,
+    scheduledDate: new Date().toISOString().split("T")[0],
+    timeSlot: gig.preferredTime || "10:00 AM – 11:00 AM",
+    notes: `Accepted application price: ₹${app.proposedPrice}. Pitch: ${app.message}`,
+  });
+
+  return { gig, application: app, booking };
+}

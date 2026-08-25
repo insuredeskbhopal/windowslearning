@@ -26,10 +26,10 @@ export interface NavbarProps {
 }
 
 const DEFAULT_NAV_ITEMS: NavItem[] = [
-  { label: "SKILL", href: "/skills" },
-  { label: "MENTOR", href: "/mentors" },
-  { label: "COMMUNITY", href: "/#community" },
-  { label: "CAREER", href: "/#career" },
+  { label: "SESSIONS", href: "/sessions" },
+  { label: "LEARNING GIGS", href: "/gigs" },
+  { label: "MENTORS", href: "/mentors" },
+  { label: "SKILLS", href: "/skills" },
   { label: "BECOME A MENTOR", href: "/onboarding/mentor" },
 ];
 

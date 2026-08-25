@@ -67,8 +67,11 @@ model User {
   updatedAt                 DateTime        @updatedAt
   learnerProfile            LearnerProfile?
   mentorProfile             MentorProfile?
-  learnerBookings           Booking[]       @relation("LearnerBookings")
-  mentorBookings            Booking[]       @relation("MentorBookings")
+  learnerBookings           Booking[]          @relation("LearnerBookings")
+  mentorBookings            Booking[]          @relation("MentorBookings")
+  teachingSessions          TeachingSession[]  @relation("MentorTeachingSessions")
+  learnerGigs               LearningGig[]      @relation("LearnerGigs")
+  gigApplications           GigApplication[]   @relation("MentorGigApplications")
 }
 
 model LearnerProfile {
@@ -118,4 +121,51 @@ model Booking {
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model TeachingSession {
+  id               String   @id @default(cuid())
+  mentorId         String
+  mentor           User     @relation("MentorTeachingSessions", fields: [mentorId], references: [id], onDelete: Cascade)
+  title            String
+  description      String
+  learningOutcomes String   @default("[]") // JSON string array of outcomes
+  skillSlug        String
+  durationMinutes  Int      @default(60)
+  price            Int      @default(500)
+  level            String   @default("All Levels") // Beginner, Intermediate, Advanced, All Levels
+  format           String   @default("1:1 Live Online")
+  isPublished      Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model LearningGig {
+  id              String           @id @default(cuid())
+  learnerId       String
+  learner         User             @relation("LearnerGigs", fields: [learnerId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  skillSlug       String
+  level           String           @default("Beginner") // Beginner, Intermediate, Advanced
+  durationMinutes Int              @default(60)
+  budget          Int              @default(300) // in INR
+  preferredTime   String           @default("Flexible / Evening")
+  status          String           @default("OPEN") // OPEN, MATCHED, CLOSED
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  applications    GigApplication[]
+}
+
+model GigApplication {
+  id            String      @id @default(cuid())
+  gigId         String
+  gig           LearningGig @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  mentorId      String
+  mentor        User        @relation("MentorGigApplications", fields: [mentorId], references: [id], onDelete: Cascade)
+  proposedPrice Int
+  message       String
+  status        String      @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
