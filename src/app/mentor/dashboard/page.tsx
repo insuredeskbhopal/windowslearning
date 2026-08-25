@@ -549,8 +549,10 @@ export default function MentorStudioPage() {
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Activity & Notifications Box */}
+                {/* Right Column: Recent Activity & Notifications Box */}
+                <div>
                   <div className={styles.cardSection}>
                     <div className={styles.cardSectionTitleRow}>
                       <div className={styles.cardSectionTitle}>

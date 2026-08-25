@@ -310,9 +310,9 @@
 }
 
 .contentArea {
-  padding: 2.25rem 2rem 4rem 2rem;
+  padding: 2.25rem 2.5rem 4rem 2.5rem;
   box-sizing: border-box;
-  max-width: 1200px;
+  max-width: 100%;
   width: 100%;
 }
 
@@ -385,12 +385,13 @@
 }
 
 /* ----------------------------------------------------
-   2-Column Layout
+   3-Column Studio Overview Layout
    ---------------------------------------------------- */
 .studioColumnsGrid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.75rem;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
 }
 
 .cardSection {
