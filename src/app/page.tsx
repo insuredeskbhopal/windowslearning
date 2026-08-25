@@ -47,8 +47,8 @@ export default function Home() {
       <Navbar
         brandName="windowslearning"
         items={navItems}
-        ctaLabel="START LEARNING"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/login"
       />
 
       {/* Middle Hero Section */}

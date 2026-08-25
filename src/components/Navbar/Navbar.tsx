@@ -37,8 +37,8 @@ export default function Navbar({
   brandName = "windowslearning",
   brandHref = "/",
   items = DEFAULT_NAV_ITEMS,
-  ctaLabel = "START LEARNING",
-  ctaHref = "/skills",
+  ctaLabel = "GET STARTED",
+  ctaHref = "/auth/login",
   onCtaClick,
   showSearch = false,
 }: NavbarProps) {
@@ -98,7 +98,7 @@ export default function Navbar({
               })}
             </ul>
 
-            {/* User Session CTA or Sign In / Start Learning */}
+            {/* User Session CTA or GET STARTED Button */}
             {user ? (
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <Link
@@ -132,29 +132,14 @@ export default function Navbar({
                 </button>
               </div>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                <Link
-                  href="/auth/login"
-                  style={{
-                    fontSize: "0.78rem",
-                    fontWeight: 700,
-                    color: "#0a261a",
-                    textDecoration: "none",
-                    padding: "0.4rem 0.6rem",
-                    fontFamily: "var(--font-mono)",
-                  }}
-                >
-                  LOGIN
-                </Link>
-                <Link
-                  href={ctaHref}
-                  className={styles.ctaButton}
-                  onClick={onCtaClick}
-                  id="navbar-cta-button"
-                >
-                  <span>{ctaLabel}</span>
-                </Link>
-              </div>
+              <Link
+                href={ctaHref}
+                className={styles.ctaButton}
+                onClick={onCtaClick}
+                id="navbar-cta-button"
+              >
+                <span>{ctaLabel}</span>
+              </Link>
             )}
           </nav>
 

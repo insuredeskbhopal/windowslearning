@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
-import styles from "./page.module.css";
+import styles from "../learner/dashboard/page.module.css";
 
 export default function MentorDashboardPage() {
   const router = useRouter();

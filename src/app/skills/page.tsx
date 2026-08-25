@@ -205,8 +205,8 @@ function SkillsSearchContent() {
           { label: "CAREER", href: "/#career" },
           { label: "BECOME A MENTOR", href: "/#become-mentor" },
         ]}
-        ctaLabel="START LEARNING"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/login"
       />
 
       <main className={styles.mainContent}>

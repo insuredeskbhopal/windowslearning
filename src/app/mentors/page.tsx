@@ -242,8 +242,8 @@ function MentorsSearchContent() {
           { label: "CAREER", href: "/#career" },
           { label: "BECOME A MENTOR", href: "/onboarding/mentor" },
         ]}
-        ctaLabel="START LEARNING"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/login"
       />
 
       <main className={styles.mainContainer}>
