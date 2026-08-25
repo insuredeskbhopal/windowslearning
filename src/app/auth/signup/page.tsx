@@ -38,16 +38,25 @@ function SignupForm() {
     }
 
     if (intent === "mentor") {
-      router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
+      router.push("/onboarding/mentor");
       return;
     }
 
     if (intent === "learner") {
-      router.push(`/onboarding/learner?redirect=${encodeURIComponent(redirect)}`);
+      router.push("/onboarding/learner");
       return;
     }
 
-    router.push(`/onboarding/role-select?redirect=${encodeURIComponent(redirect)}`);
+    if (user.learnerOnboardingComplete || user.mentorOnboardingComplete) {
+      if (user.roles?.includes("MENTOR")) {
+        router.push("/mentor/dashboard");
+      } else {
+        router.push("/learner/dashboard");
+      }
+      return;
+    }
+
+    router.push("/onboarding/role-select");
   };
 
   const handleGoogleCredentialResponse = async (response: any) => {

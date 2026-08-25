@@ -110,11 +110,7 @@ function LearnerOnboardingContent() {
 
       if (res.ok) {
         await refreshUser();
-        if (redirect && redirect !== "/" && !redirect.startsWith("/auth") && !redirect.startsWith("/onboarding")) {
-          router.push(redirect);
-        } else {
-          router.push("/learner/dashboard");
-        }
+        router.push("/learner/dashboard");
       } else {
         router.push("/learner/dashboard");
       }

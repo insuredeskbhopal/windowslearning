@@ -37,23 +37,24 @@ function LoginForm() {
     }
 
     if (intent === "mentor" && !user.mentorOnboardingComplete) {
-      router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
+      router.push("/onboarding/mentor");
       return;
     }
 
     if (!user.learnerOnboardingComplete && !user.mentorOnboardingComplete) {
       if (intent === "learner") {
-        router.push(`/onboarding/learner?redirect=${encodeURIComponent(redirect)}`);
+        router.push("/onboarding/learner");
       } else {
-        router.push(`/onboarding/role-select?redirect=${encodeURIComponent(redirect)}`);
+        router.push("/onboarding/role-select");
       }
       return;
     }
 
-    if (redirect && redirect !== "/" && !redirect.startsWith("/auth")) {
-      router.push(redirect);
+    // Always route directly to the user's dedicated dashboard
+    if (user.roles?.includes("MENTOR")) {
+      router.push("/mentor/dashboard");
     } else {
-      router.push(user.roles?.includes("MENTOR") ? "/mentor/dashboard" : "/learner/dashboard");
+      router.push("/learner/dashboard");
     }
   };
 
