@@ -171,6 +171,59 @@ export async function getMentorsFromDb(filters?: {
   search?: string;
 }): Promise<DbMentor[]> {
   const db = getDbPool();
+
+  // 1. Fetch real onboarded mentors from MentorProfile + User
+  const realMentorsRes = await db.query(`
+    SELECT 
+      mp."id",
+      mp."userId",
+      u."name",
+      COALESCE(u."avatarUrl", 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150') as "avatar",
+      mp."title" as "role",
+      COALESCE(mp."location", 'India') as "company",
+      mp."bio",
+      COALESCE(mp."hourlyRate", 200) as "hourlyRate",
+      COALESCE(mp."isFreeCommunity", false) as "isFreeCommunity",
+      COALESCE(mp."availability", 'Available Today') as "availability",
+      COALESCE(mp."experienceYears", 2) as "experienceYears",
+      mp."teachingSkills" as "skills",
+      mp."teachingSkills" as "skillsLabels",
+      COALESCE(mp."preferredLanguage", 'Hindi / English') as "timezone",
+      true as "featured",
+      0 as "reviewsCount",
+      5.0 as "rating",
+      0 as "studentsMentored",
+      mp."createdAt",
+      mp."updatedAt"
+    FROM windowslearning."MentorProfile" mp
+    JOIN windowslearning."User" u ON mp."userId" = u."id"
+    ORDER BY mp."updatedAt" DESC;
+  `);
+
+  const realMentors: DbMentor[] = realMentorsRes.rows.map((row) => ({
+    id: row.userId || row.id,
+    slug: (row.name || "mentor").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + (row.userId || row.id).substring(0, 5),
+    name: row.name,
+    avatar: row.avatar,
+    role: row.role || "Verified Mentor",
+    company: row.company || "India",
+    bio: row.bio || "",
+    rating: Number(row.rating) || 5.0,
+    reviewsCount: Number(row.reviewsCount) || 0,
+    studentsMentored: Number(row.studentsMentored) || 0,
+    hourlyRate: Number(row.hourlyRate) || 0,
+    isFreeCommunity: Boolean(row.isFreeCommunity),
+    availability: (row.availability as any) || "Available Today",
+    timezone: row.timezone || "India (IST)",
+    experienceYears: Number(row.experienceYears) || 2,
+    skills: typeof row.skills === "string" ? JSON.parse(row.skills) : row.skills || [],
+    skillsLabels: typeof row.skillsLabels === "string" ? JSON.parse(row.skillsLabels) : row.skillsLabels || [],
+    featured: true,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }));
+
+  // 2. Fetch seeded mentors from Mentor table
   let query = 'SELECT * FROM windowslearning."Mentor" WHERE 1=1';
   const values: any[] = [];
 
@@ -191,7 +244,7 @@ export async function getMentorsFromDb(filters?: {
   query += ' ORDER BY "featured" DESC, "rating" DESC;';
 
   const res = await db.query(query, values);
-  let mentors = res.rows.map((row) => ({
+  const seededMentors: DbMentor[] = res.rows.map((row) => ({
     ...row,
     skills: typeof row.skills === "string" ? JSON.parse(row.skills) : row.skills || [],
     skillsLabels:
@@ -200,16 +253,44 @@ export async function getMentorsFromDb(filters?: {
         : row.skillsLabels || [],
   }));
 
+  // Combine real mentors first, followed by seeded mentors
+  const realUserIds = new Set(realMentors.map((m) => m.name.toLowerCase()));
+  const combined = [
+    ...realMentors,
+    ...seededMentors.filter((m) => !realUserIds.has(m.name.toLowerCase())),
+  ];
+
+  let filtered = combined;
+
+  if (filters?.availability && filters.availability !== "all") {
+    filtered = filtered.filter((m) => m.availability === filters.availability);
+  }
+
+  if (filters?.freeOnly) {
+    filtered = filtered.filter((m) => m.isFreeCommunity);
+  }
+
+  if (filters?.search && filters.search.trim()) {
+    const q = filters.search.trim().toLowerCase();
+    filtered = filtered.filter(
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        m.role.toLowerCase().includes(q) ||
+        m.company.toLowerCase().includes(q) ||
+        m.bio.toLowerCase().includes(q)
+    );
+  }
+
   if (filters?.skill && filters.skill !== "all") {
     const s = filters.skill.toLowerCase();
-    mentors = mentors.filter(
+    filtered = filtered.filter(
       (m) =>
         m.skills.some((sk: string) => sk.toLowerCase().includes(s)) ||
         m.skillsLabels.some((sl: string) => sl.toLowerCase().includes(s))
     );
   }
 
-  return mentors;
+  return filtered;
 }
 
 export async function getAllMentorsFromDb(): Promise<DbMentor[]> {
@@ -424,6 +505,53 @@ export async function saveMentorProfile(
       data.isFreeCommunity ?? false,
       data.availability || "Available Today",
       data.preferredLanguage || "Hindi / English",
+    ]
+  );
+
+  // Also sync directly to Mentor directory table
+  const mentorSlug = user.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + userId.substring(0, 5);
+  await db.query(
+    `INSERT INTO windowslearning."Mentor" (
+      "id", "slug", "name", "avatar", "role", "company", "bio",
+      "rating", "reviewsCount", "studentsMentored", "hourlyRate",
+      "isFreeCommunity", "availability", "timezone", "experienceYears",
+      "skills", "skillsLabels", "featured"
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+    ON CONFLICT ("id") DO UPDATE SET
+      "slug" = EXCLUDED."slug",
+      "name" = EXCLUDED."name",
+      "avatar" = EXCLUDED."avatar",
+      "role" = EXCLUDED."role",
+      "company" = EXCLUDED."company",
+      "bio" = EXCLUDED."bio",
+      "hourlyRate" = EXCLUDED."hourlyRate",
+      "isFreeCommunity" = EXCLUDED."isFreeCommunity",
+      "availability" = EXCLUDED."availability",
+      "timezone" = EXCLUDED."timezone",
+      "experienceYears" = EXCLUDED."experienceYears",
+      "skills" = EXCLUDED."skills",
+      "skillsLabels" = EXCLUDED."skillsLabels",
+      "featured" = EXCLUDED."featured",
+      "updatedAt" = CURRENT_TIMESTAMP;`,
+    [
+      userId,
+      mentorSlug,
+      user.name,
+      user.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+      data.title,
+      data.location || "India",
+      data.bio,
+      5.0,
+      0,
+      0,
+      data.hourlyRate || 200,
+      data.isFreeCommunity ?? false,
+      data.availability || "Available Today",
+      data.preferredLanguage || "Hindi / English",
+      data.experienceYears || 2,
+      JSON.stringify(data.teachingSkills),
+      JSON.stringify(data.teachingSkills),
+      true,
     ]
   );
 
