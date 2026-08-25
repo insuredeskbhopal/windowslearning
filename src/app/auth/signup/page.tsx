@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, Mail, Lock, ArrowRight, Sparkles, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, Sparkles, AlertCircle, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "../login/page.module.css";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 function SignupForm() {
   const router = useRouter();
@@ -14,6 +21,7 @@ function SignupForm() {
   const redirect = searchParams.get("redirect") || "/";
   const intent = searchParams.get("intent") || "";
   const action = searchParams.get("action") || "";
+  const mentorId = searchParams.get("mentorId") || "";
 
   const { signup, loginWithGoogle } = useAuth();
   const [name, setName] = useState("");
@@ -22,6 +30,55 @@ function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handlePostAuthRedirect = (user: any) => {
+    if (action === "book" && mentorId) {
+      router.push(`/mentors?mentorId=${encodeURIComponent(mentorId)}&action=book`);
+      return;
+    }
+
+    if (intent === "mentor") {
+      router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
+      return;
+    }
+
+    if (intent === "learner") {
+      router.push(`/onboarding/learner?redirect=${encodeURIComponent(redirect)}`);
+      return;
+    }
+
+    router.push(`/onboarding/role-select?redirect=${encodeURIComponent(redirect)}`);
+  };
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    if (!response?.credential) return;
+    setError("");
+    setLoading(true);
+    const res = await loginWithGoogle(intent || undefined, undefined, response.credential);
+    setLoading(false);
+
+    if (res.success) {
+      const meRes = await fetch("/api/auth/me");
+      const meData = await meRes.json();
+      handlePostAuthRedirect(meData.user || {});
+    } else {
+      setError(res.message || "Google authentication failed.");
+    }
+  };
+
+  useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (typeof window !== "undefined" && window.google && clientId) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse,
+        });
+      } catch (err) {
+        console.warn("Google GIS init in signup:", err);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,37 +104,41 @@ function SignupForm() {
     setLoading(false);
 
     if (res.success) {
-      // Intent-based routing
-      if (intent === "mentor") {
-        router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
-      } else if (intent === "learner") {
-        router.push(`/onboarding/learner?redirect=${encodeURIComponent(redirect)}`);
-      } else {
-        router.push(`/onboarding/role-select?redirect=${encodeURIComponent(redirect)}`);
-      }
+      const meRes = await fetch("/api/auth/me");
+      const meData = await meRes.json();
+      handlePostAuthRedirect(meData.user || {});
     } else {
       setError(res.message || "Registration failed.");
     }
   };
 
   const handleGoogleAuth = async () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (typeof window !== "undefined" && window.google?.accounts?.id && clientId) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse,
+        });
+        window.google.accounts.id.prompt();
+        return;
+      } catch (err) {
+        console.warn("Google Prompt failed in signup, falling back to prompt:", err);
+      }
+    }
+
+    const enteredEmail = window.prompt("Enter your Google Account Email:", email || "user@gmail.com");
+    if (!enteredEmail) return;
+
     setError("");
     setLoading(true);
-    const res = await loginWithGoogle(intent || undefined);
+    const res = await loginWithGoogle(intent || undefined, enteredEmail);
     setLoading(false);
 
     if (res.success) {
-      if (res.isNewAccount) {
-        if (intent === "mentor") {
-          router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
-        } else if (intent === "learner") {
-          router.push(`/onboarding/learner?redirect=${encodeURIComponent(redirect)}`);
-        } else {
-          router.push(`/onboarding/role-select?redirect=${encodeURIComponent(redirect)}`);
-        }
-      } else {
-        router.push(redirect);
-      }
+      const meRes = await fetch("/api/auth/me");
+      const meData = await meRes.json();
+      handlePostAuthRedirect(meData.user || {});
     } else {
       setError(res.message || "Google registration failed.");
     }
@@ -85,6 +146,19 @@ function SignupForm() {
 
   return (
     <div className={styles.authPage}>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={() => {
+          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+          if (window.google && clientId) {
+            window.google.accounts.id.initialize({
+              client_id: clientId,
+              callback: handleGoogleCredentialResponse,
+            });
+          }
+        }}
+      />
       <div className={styles.ambientGlow} />
 
       <Navbar
@@ -94,8 +168,8 @@ function SignupForm() {
           { label: "MENTOR", href: "/mentors" },
           { label: "COMMUNITY", href: "/#community" },
         ]}
-        ctaLabel="BROWSE SKILLS"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/login"
       />
 
       <div className={styles.authCard}>
@@ -103,7 +177,7 @@ function SignupForm() {
           <div className={styles.brandTitle}>
             windows<span>learning</span>
           </div>
-          <h1 className={styles.title}>Create Your Account</h1>
+          <h1 className={styles.title}>Create Real Account</h1>
           <p className={styles.subtitle}>
             Join thousands of learners and mentors sharing practical skills.
           </p>
@@ -123,7 +197,7 @@ function SignupForm() {
           </div>
         )}
 
-        {/* Google Authentication */}
+        {/* Google Authentication with Real DB sync */}
         <button
           type="button"
           onClick={handleGoogleAuth}
@@ -151,7 +225,7 @@ function SignupForm() {
           <span>Continue with Google</span>
         </button>
 
-        <div className={styles.divider}>or with email</div>
+        <div className={styles.divider}>or with email & password</div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.fieldGroup}>
@@ -218,7 +292,7 @@ function SignupForm() {
             {loading ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                <span>Creating Account...</span>
+                <span>Creating Real Account in DB...</span>
               </>
             ) : (
               <>
@@ -232,7 +306,7 @@ function SignupForm() {
         <div className={styles.cardFooter}>
           Already have an account?{" "}
           <Link
-            href={`/auth/login?redirect=${encodeURIComponent(redirect)}&intent=${intent}&action=${action}`}
+            href={`/auth/login?redirect=${encodeURIComponent(redirect)}&intent=${intent}&action=${action}&mentorId=${mentorId}`}
             className={styles.footerLink}
           >
             Sign In
@@ -248,7 +322,7 @@ export default function SignupPage() {
     <Suspense
       fallback={
         <div style={{ minHeight: "100vh", background: "#020705", color: "#34d399", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          Loading...
+          Loading Signup...
         </div>
       }
     >

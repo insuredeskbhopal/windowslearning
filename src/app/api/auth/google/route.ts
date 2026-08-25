@@ -5,23 +5,53 @@ import { createSessionToken, COOKIE_OPTIONS } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, name, avatarUrl, intent } = body;
+    const { credential, email, name, avatarUrl, intent } = body;
 
-    const userEmail = email ? email.toLowerCase().trim() : "demo.user@gmail.com";
-    const userName = name ? name.trim() : "Google Learner";
-    const userAvatar = avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200";
+    let userEmail = email ? email.toLowerCase().trim() : "";
+    let userName = name ? name.trim() : "";
+    let userAvatar = avatarUrl || "";
+
+    // If Google ID Token credential was supplied, verify with Google's tokeninfo API
+    if (credential) {
+      try {
+        const verifyRes = await fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`
+        );
+        if (verifyRes.ok) {
+          const googleData = await verifyRes.json();
+          userEmail = googleData.email?.toLowerCase().trim() || userEmail;
+          userName = googleData.name || googleData.given_name || userName;
+          userAvatar = googleData.picture || userAvatar;
+        } else {
+          console.warn("Google token verification failed, falling back to body params");
+        }
+      } catch (err) {
+        console.warn("Failed to reach Google tokeninfo API:", err);
+      }
+    }
+
+    if (!userEmail) {
+      return NextResponse.json(
+        { success: false, message: "Google email address is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!userName) {
+      userName = userEmail.split("@")[0];
+    }
 
     let user = await findUserByEmail(userEmail);
     let isNewAccount = false;
 
     if (!user) {
-      // Create new user for Google OAuth
+      // Create new user for Google OAuth in PostgreSQL
       isNewAccount = true;
       const initialRole = intent === "mentor" ? "MENTOR" : "LEARNER";
       user = await createUser({
         name: userName,
         email: userEmail,
-        avatarUrl: userAvatar,
+        avatarUrl: userAvatar || undefined,
         roles: [initialRole],
         activeRole: initialRole,
         emailVerified: true,

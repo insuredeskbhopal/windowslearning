@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, ArrowRight, Sparkles, AlertCircle, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Mail, Lock, ArrowRight, Sparkles, AlertCircle, Loader2, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 function LoginForm() {
   const router = useRouter();
@@ -23,19 +30,16 @@ function LoginForm() {
   const [error, setError] = useState("");
 
   const handlePostAuthRedirect = (user: any) => {
-    // If returning from booking a mentor, redirect back to mentor page with action=book preserved
     if (action === "book" && mentorId) {
       router.push(`/mentors?mentorId=${encodeURIComponent(mentorId)}&action=book`);
       return;
     }
 
-    // If the user arrived with 'intent=mentor' and hasn't completed mentor onboarding
     if (intent === "mentor" && !user.mentorOnboardingComplete) {
       router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
-    // If user is brand new and has not completed any onboarding
     if (!user.learnerOnboardingComplete && !user.mentorOnboardingComplete) {
       if (intent === "learner") {
         router.push(`/onboarding/learner?redirect=${encodeURIComponent(redirect)}`);
@@ -45,13 +49,44 @@ function LoginForm() {
       return;
     }
 
-    // Existing user -> Return to intended action/page or dashboard
     if (redirect && redirect !== "/" && !redirect.startsWith("/auth")) {
       router.push(redirect);
     } else {
       router.push(user.roles?.includes("MENTOR") ? "/mentor/dashboard" : "/learner/dashboard");
     }
   };
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    if (!response?.credential) return;
+    setError("");
+    setLoading(true);
+    const res = await loginWithGoogle(intent || undefined, undefined, response.credential);
+    setLoading(false);
+
+    if (res.success) {
+      const meRes = await fetch("/api/auth/me");
+      const meData = await meRes.json();
+      handlePostAuthRedirect(meData.user || {});
+    } else {
+      setError(res.message || "Google authentication failed.");
+    }
+  };
+
+  useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (typeof window !== "undefined" && window.google && clientId) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+      } catch (err) {
+        console.warn("Google GIS init:", err);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,12 +106,25 @@ function LoginForm() {
   };
 
   const handleGoogleAuth = async () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (typeof window !== "undefined" && window.google?.accounts?.id && clientId) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse,
+        });
+        window.google.accounts.id.prompt();
+        return;
+      } catch (err) {
+        console.warn("Google Prompt failed, falling back to prompt:", err);
+      }
+    }
+
     const enteredEmail = window.prompt("Enter your Google Account Email:", email || "user@gmail.com");
     if (!enteredEmail) return;
 
     setError("");
     setLoading(true);
-
     const res = await loginWithGoogle(intent || undefined, enteredEmail);
     setLoading(false);
 
@@ -96,6 +144,19 @@ function LoginForm() {
 
   return (
     <div className={styles.authPage}>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={() => {
+          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+          if (window.google && clientId) {
+            window.google.accounts.id.initialize({
+              client_id: clientId,
+              callback: handleGoogleCredentialResponse,
+            });
+          }
+        }}
+      />
       <div className={styles.ambientGlow} />
 
       <Navbar

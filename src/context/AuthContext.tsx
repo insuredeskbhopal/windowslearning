@@ -33,7 +33,8 @@ interface AuthContextType {
   ) => Promise<{ success: boolean; message?: string }>;
   loginWithGoogle: (
     intent?: string,
-    customEmail?: string
+    customEmail?: string,
+    credential?: string
   ) => Promise<{ success: boolean; isNewAccount?: boolean; message?: string }>;
   logout: () => Promise<void>;
   requireAuth: (options?: RequireAuthOptions) => boolean;
@@ -107,12 +108,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async (intent?: string, customEmail?: string) => {
+  const loginWithGoogle = async (
+    intent?: string,
+    customEmail?: string,
+    credential?: string
+  ) => {
     try {
       const res = await fetch("/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          credential: credential || undefined,
           email: customEmail || undefined,
           intent,
         }),
