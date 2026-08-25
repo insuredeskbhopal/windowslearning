@@ -44,6 +44,7 @@ import {
   Award,
   Briefcase,
   Share2,
+  Check,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import BrandLogo from "@/components/Navbar/BrandLogo";
