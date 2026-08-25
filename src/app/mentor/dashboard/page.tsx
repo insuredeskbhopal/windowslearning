@@ -32,6 +32,9 @@ import {
   Coffee,
   Zap,
   Palmtree,
+  Bell,
+  Activity,
+  CheckCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import BrandLogo from "@/components/Navbar/BrandLogo";
@@ -543,6 +546,90 @@ export default function MentorStudioPage() {
                             #{s.replace(/-/g, " ")}
                           </span>
                         ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activity & Notifications Box */}
+                  <div className={styles.cardSection}>
+                    <div className={styles.cardSectionTitleRow}>
+                      <div className={styles.cardSectionTitle}>
+                        <Bell size={18} color="#34d399" />
+                        <span>Recent Activity & Updates</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.72rem", color: "#34d399", background: "rgba(16, 185, 129, 0.12)", padding: "0.2rem 0.5rem", borderRadius: "9999px" }}>
+                        <span className={styles.badgePulse} />
+                        <span>Live Feed</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.activityList}>
+                      {/* Booking Notifications */}
+                      {bookings.length > 0 ? (
+                        bookings.map((b) => (
+                          <div key={`act-${b.id}`} className={styles.activityItem}>
+                            <div className={styles.activityIconWrap}>
+                              <Calendar size={16} />
+                            </div>
+                            <div className={styles.activityContent}>
+                              <div className={styles.activityTitle}>
+                                <span>New 1-on-1 Lesson Booked</span>
+                                <span className={styles.activityTime}>Just Now</span>
+                              </div>
+                              <p className={styles.activityDesc}>
+                                Student booked <strong>{b.topic}</strong> for {new Date(b.scheduledDate).toLocaleDateString()} at {b.timeSlot}.
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : null}
+
+                      {/* Profile Verified & Live */}
+                      <div className={styles.activityItem}>
+                        <div className={styles.activityIconWrap}>
+                          <ShieldCheck size={16} />
+                        </div>
+                        <div className={styles.activityContent}>
+                          <div className={styles.activityTitle}>
+                            <span>Mentor Profile Active</span>
+                            <span className={styles.activityTime}>Active</span>
+                          </div>
+                          <p className={styles.activityDesc}>
+                            Your profile is verified and visible to learners on the public mentor directory.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Instant Confirmation */}
+                      <div className={styles.activityItem}>
+                        <div className={styles.activityIconWrap}>
+                          <Zap size={16} />
+                        </div>
+                        <div className={styles.activityContent}>
+                          <div className={styles.activityTitle}>
+                            <span>Instant Booking Enabled</span>
+                            <span className={styles.activityTime}>Enabled</span>
+                          </div>
+                          <p className={styles.activityDesc}>
+                            Learners can auto-confirm 1-on-1 lessons directly from your profile page.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* UPI Payout Ready */}
+                      <div className={styles.activityItem}>
+                        <div className={styles.activityIconWrap}>
+                          <DollarSign size={16} />
+                        </div>
+                        <div className={styles.activityContent}>
+                          <div className={styles.activityTitle}>
+                            <span>Payout Method Configured</span>
+                            <span className={styles.activityTime}>Ready</span>
+                          </div>
+                          <p className={styles.activityDesc}>
+                            Earnings will be transferred directly to your configured UPI ID.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
