@@ -513,6 +513,7 @@ export default function MentorStudioPage() {
                 width={36}
                 height={36}
                 className={styles.userAvatarImg}
+                unoptimized
               />
             ) : (
               <div className={styles.userAvatarFallback}>{initials}</div>
