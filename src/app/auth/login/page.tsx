@@ -169,11 +169,6 @@ function LoginForm() {
     }
   };
 
-  const autofillDemoAccount = () => {
-    setEmail("learner@windowslearning.com");
-    setPassword("password123");
-  };
-
   return (
     <div className={styles.authPage}>
       <Script
@@ -225,33 +220,6 @@ function LoginForm() {
             <span>{error}</span>
           </div>
         )}
-
-        {/* Real Seed Account Quick Helper */}
-        <div
-          onClick={autofillDemoAccount}
-          style={{
-            background: "rgba(16, 185, 129, 0.08)",
-            border: "1px dashed rgba(52, 211, 153, 0.35)",
-            borderRadius: "12px",
-            padding: "0.75rem 1rem",
-            marginBottom: "1.25rem",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          title="Click to autofill real seeded database user"
-        >
-          <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.85)" }}>
-            <div style={{ fontWeight: 700, color: "#34d399", marginBottom: "2px", display: "flex", alignItems: "center", gap: "4px" }}>
-              <ShieldCheck size={14} /> Real DB Test Account (Click to Autofill):
-            </div>
-            <div>learner@windowslearning.com • password123</div>
-          </div>
-          <span style={{ fontSize: "0.75rem", color: "#34d399", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
-            AUTOFILL
-          </span>
-        </div>
 
         {/* Google Authentication with Real DB sync */}
         <button

@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   Users,
   Calendar,
-  DollarSign,
-  Star,
   CheckCircle2,
   Clock,
   ArrowRight,
@@ -21,12 +19,33 @@ import styles from "@/app/learner/dashboard/page.module.css";
 export default function MentorDashboardPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [fetchingProfile, setFetchingProfile] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth/login?redirect=/mentor/dashboard");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    async function loadMentorProfile() {
+      try {
+        const res = await fetch("/api/onboarding/mentor");
+        const data = await res.json();
+        if (data.success && data.profile) {
+          setProfile(data.profile);
+        }
+      } catch (err) {
+        console.error("Failed to load mentor profile:", err);
+      } finally {
+        setFetchingProfile(false);
+      }
+    }
+    if (user) {
+      loadMentorProfile();
+    }
+  }, [user]);
 
   if (loading || !user) {
     return (
@@ -47,8 +66,8 @@ export default function MentorDashboardPage() {
           { label: "MENTOR", href: "/mentors" },
           { label: "COMMUNITY", href: "/#community" },
         ]}
-        ctaLabel="BROWSE MENTORS"
-        ctaHref="/mentors"
+        ctaLabel="GET STARTED"
+        ctaHref="/skills"
       />
 
       <main className={styles.container}>
@@ -62,7 +81,7 @@ export default function MentorDashboardPage() {
               <ShieldCheck size={24} color="#34d399" />
             </div>
             <p className={styles.welcomeSubtitle}>
-              Manage your teaching schedule, incoming learner requests, and hourly rate.
+              {profile?.title || "Verified Mentor Profile"} • {profile?.location || "India"}
             </p>
           </div>
 
@@ -74,7 +93,7 @@ export default function MentorDashboardPage() {
           </div>
         </div>
 
-        {/* 3 Metric Cards */}
+        {/* Real DB Metric Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.25rem", marginBottom: "2rem" }}>
           <div style={{ background: "rgba(12, 29, 21, 0.8)", border: "1px solid rgba(52, 211, 153, 0.25)", borderRadius: "16px", padding: "1.5rem" }}>
             <div style={{ fontSize: "0.82rem", color: "rgba(226, 237, 231, 0.65)", fontFamily: "var(--font-mono)", marginBottom: "0.4rem" }}>
@@ -82,7 +101,7 @@ export default function MentorDashboardPage() {
             </div>
             <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#34d399", display: "flex", alignItems: "center", gap: "0.4rem" }}>
               <CheckCircle2 size={20} />
-              <span>Verified & Active</span>
+              <span>{user.mentorOnboardingComplete ? "Active & Listed" : "Pending Setup"}</span>
             </div>
           </div>
 
@@ -91,16 +110,16 @@ export default function MentorDashboardPage() {
               TEACHING FEE
             </div>
             <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#ffffff" }}>
-              ₹250 / hour
+              {profile?.isFreeCommunity ? "Free Community Class" : `₹${profile?.hourlyRate || 0} / hour`}
             </div>
           </div>
 
           <div style={{ background: "rgba(12, 29, 21, 0.8)", border: "1px solid rgba(52, 211, 153, 0.25)", borderRadius: "16px", padding: "1.5rem" }}>
             <div style={{ fontSize: "0.82rem", color: "rgba(226, 237, 231, 0.65)", fontFamily: "var(--font-mono)", marginBottom: "0.4rem" }}>
-              TOTAL LEARNERS
+              TEACHING EXPERIENCE
             </div>
-            <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#fbbf24" }}>
-              12 Taught (5.0 ★)
+            <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#34d399" }}>
+              {profile?.experienceYears ? `${profile.experienceYears} Years Exp` : "Ready to Teach"}
             </div>
           </div>
         </div>
@@ -122,10 +141,10 @@ export default function MentorDashboardPage() {
                   Your Profile is Live on the Mentor Directory
                 </div>
                 <p style={{ fontSize: "0.88rem", color: "rgba(226, 237, 231, 0.65)", marginBottom: "1.25rem", maxWidth: "420px", margin: "0 auto 1.25rem auto" }}>
-                  Learners browsing the directory can now book 1-on-1 sessions with you. You will receive WhatsApp and email alerts when someone books.
+                  Learners browsing the directory can now book 1-on-1 sessions with you. New bookings will appear here.
                 </p>
                 <Link href="/mentors" className={styles.actionButton}>
-                  <span>View Your Public Profile in Directory</span>
+                  <span>View Public Mentor Directory</span>
                   <ArrowRight size={14} />
                 </Link>
               </div>

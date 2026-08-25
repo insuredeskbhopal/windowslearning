@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromCookies, createSessionToken, COOKIE_OPTIONS } from "@/lib/auth";
-import { saveMentorProfile, findUserById } from "@/lib/db";
+import { saveMentorProfile, findUserById, getMentorProfileByUserId } from "@/lib/db";
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getSessionFromCookies();
+    if (!session) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized." },
+        { status: 401 }
+      );
+    }
+
+    const profile = await getMentorProfileByUserId(session.id);
+    return NextResponse.json({ success: true, profile });
+  } catch (error) {
+    console.error("Fetch mentor profile error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch mentor profile." },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,8 +58,8 @@ export async function POST(req: NextRequest) {
       bio,
       location: location || "India",
       teachingSkills,
-      experienceYears: Number(experienceYears) || 3,
-      hourlyRate: Number(hourlyRate) || 200,
+      experienceYears: Number(experienceYears) || 1,
+      hourlyRate: Number(hourlyRate) || 0,
       isFreeCommunity: Boolean(isFreeCommunity),
       availability: availability || "Available Today",
       preferredLanguage: preferredLanguage || "Hindi / English",

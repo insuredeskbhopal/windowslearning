@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, Loader2, Sparkles, Star, ShieldCheck, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, Sparkles, ShieldCheck, Clock, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
@@ -25,45 +25,69 @@ function MentorOnboardingContent() {
   const { user, refreshUser } = useAuth();
 
   const [step, setStep] = useState(1);
-  const [title, setTitle] = useState("Home Chef & Master Baker");
-  const [location, setLocation] = useState("Delhi, India");
-  const [bio, setBio] = useState(
-    "Teaching easy home cooking, authentic traditional recipes, soft rotis, and baking with 8+ years experience."
-  );
-  const [teachingSkills, setTeachingSkills] = useState<string[]>(["home-cooking-recipes"]);
-  const [experienceYears, setExperienceYears] = useState(5);
-  const [hourlyRate, setHourlyRate] = useState(250);
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState("");
+  const [bio, setBio] = useState("");
+  const [teachingSkills, setTeachingSkills] = useState<string[]>([]);
+  const [experienceYears, setExperienceYears] = useState(1);
+  const [hourlyRate, setHourlyRate] = useState<number | string>(200);
   const [isFreeCommunity, setIsFreeCommunity] = useState(false);
   const [availability, setAvailability] = useState("Available Today");
-  const [preferredLanguage, setPreferredLanguage] = useState("Hindi / English");
+  const [preferredLanguage, setPreferredLanguage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleSkill = (id: string) => {
     if (teachingSkills.includes(id)) {
-      if (teachingSkills.length > 1) {
-        setTeachingSkills(teachingSkills.filter((s) => s !== id));
-      }
+      setTeachingSkills(teachingSkills.filter((s) => s !== id));
     } else {
       setTeachingSkills([...teachingSkills, id]);
     }
   };
 
+  const handleStep1Next = () => {
+    setError("");
+    if (!title.trim()) {
+      setError("Please enter your professional title or what you teach.");
+      return;
+    }
+    if (!location.trim()) {
+      setError("Please enter your city and state.");
+      return;
+    }
+    if (!bio.trim()) {
+      setError("Please enter a short bio describing your teaching experience.");
+      return;
+    }
+    setStep(2);
+  };
+
+  const handleStep2Next = () => {
+    setError("");
+    if (teachingSkills.length === 0) {
+      setError("Please select at least one skill you want to teach.");
+      return;
+    }
+    setStep(3);
+  };
+
   const handlePublish = async () => {
+    setError("");
     setLoading(true);
     try {
       const res = await fetch("/api/onboarding/mentor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
-          bio,
-          location,
+          title: title.trim(),
+          bio: bio.trim(),
+          location: location.trim(),
           teachingSkills,
-          experienceYears,
-          hourlyRate: isFreeCommunity ? 0 : Number(hourlyRate),
+          experienceYears: Number(experienceYears) || 1,
+          hourlyRate: isFreeCommunity ? 0 : Number(hourlyRate) || 0,
           isFreeCommunity,
           availability,
-          preferredLanguage,
+          preferredLanguage: preferredLanguage.trim() || "Hindi / English",
         }),
       });
 
@@ -71,10 +95,11 @@ function MentorOnboardingContent() {
         await refreshUser();
         router.push("/mentor/dashboard");
       } else {
-        router.push("/mentor/dashboard");
+        const data = await res.json();
+        setError(data.message || "Failed to save mentor profile.");
       }
     } catch {
-      router.push("/mentor/dashboard");
+      setError("Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -90,8 +115,8 @@ function MentorOnboardingContent() {
           { label: "SKILL", href: "/skills" },
           { label: "MENTOR", href: "/mentors" },
         ]}
-        ctaLabel="BROWSE"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/login"
       />
 
       <div className={styles.card}>
@@ -103,13 +128,20 @@ function MentorOnboardingContent() {
           <div className={`${styles.progressStep} ${step >= 4 ? styles.progressStepActive : ""}`} />
         </div>
 
+        {error && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "10px", padding: "0.75rem 1rem", color: "#f87171", fontSize: "0.85rem", marginBottom: "1.25rem" }}>
+            <AlertCircle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+
         {/* Step 1: Basic Info */}
         {step === 1 && (
           <div>
             <div className={styles.stepBadge}>Step 1 of 4 • Basic Profile</div>
             <h1 className={styles.title}>Tell us about your teaching profile</h1>
             <p className={styles.subtitle}>
-              Learners look for clear titles and friendly introductions.
+              Enter your real teaching title, city, and practical experience.
             </p>
 
             <div className={styles.formGrid}>
@@ -119,7 +151,7 @@ function MentorOnboardingContent() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Master Tailor & Boutique Designer, Vedic Maths Coach"
+                  placeholder="e.g. Master Tailor & Dress Designer, Home Chef, Speed Maths Coach"
                   className={styles.input}
                   required
                 />
@@ -131,7 +163,7 @@ function MentorOnboardingContent() {
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Jaipur, Rajasthan, India"
+                  placeholder="e.g. Bhopal, Madhya Pradesh, India"
                   className={styles.input}
                   required
                 />
@@ -142,7 +174,7 @@ function MentorOnboardingContent() {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Describe your practical experience and how you teach step-by-step..."
+                  placeholder="Describe what practical skills you teach and your teaching approach..."
                   className={styles.textarea}
                   required
                 />
@@ -154,7 +186,7 @@ function MentorOnboardingContent() {
               <button
                 type="button"
                 className={styles.nextBtn}
-                onClick={() => setStep(2)}
+                onClick={handleStep1Next}
               >
                 <span>Continue to Skills</span>
                 <ArrowRight size={16} />
@@ -169,7 +201,7 @@ function MentorOnboardingContent() {
             <div className={styles.stepBadge}>Step 2 of 4 • Skills & Experience</div>
             <h1 className={styles.title}>What skills can you teach?</h1>
             <p className={styles.subtitle}>
-              Select the topics you have practical experience in.
+              Select one or more topics you have practical experience in.
             </p>
 
             <div className={styles.chipsGrid} style={{ marginBottom: "1.5rem" }}>
@@ -192,7 +224,7 @@ function MentorOnboardingContent() {
             </div>
 
             <div className={styles.fieldGroup} style={{ marginBottom: "1.5rem" }}>
-              <label className={styles.label}>Years of Experience in this Skill</label>
+              <label className={styles.label}>Years of Experience</label>
               <input
                 type="number"
                 value={experienceYears}
@@ -214,7 +246,7 @@ function MentorOnboardingContent() {
               <button
                 type="button"
                 className={styles.nextBtn}
-                onClick={() => setStep(3)}
+                onClick={handleStep2Next}
               >
                 <span>Continue</span>
                 <ArrowRight size={16} />
@@ -229,7 +261,7 @@ function MentorOnboardingContent() {
             <div className={styles.stepBadge}>Step 3 of 4 • Fees & Times</div>
             <h1 className={styles.title}>Set your hourly fee & availability</h1>
             <p className={styles.subtitle}>
-              You can change your pricing or availability anytime later.
+              You can change your pricing or availability anytime from your dashboard.
             </p>
 
             <div className={styles.formGrid}>
@@ -238,10 +270,11 @@ function MentorOnboardingContent() {
                 <input
                   type="number"
                   value={hourlyRate}
-                  onChange={(e) => setHourlyRate(Number(e.target.value))}
+                  onChange={(e) => setHourlyRate(e.target.value)}
                   disabled={isFreeCommunity}
                   min={0}
                   step={50}
+                  placeholder="e.g. 200"
                   className={styles.input}
                 />
               </div>
@@ -255,7 +288,7 @@ function MentorOnboardingContent() {
                   style={{ width: "18px", height: "18px", accentColor: "#34d399" }}
                 />
                 <label htmlFor="freeCommunity" style={{ color: "rgba(226, 237, 231, 0.9)", fontSize: "0.88rem", cursor: "pointer" }}>
-                  I want to offer Free Community Classes to help people in need
+                  I want to offer Free Community Classes to help learners
                 </label>
               </div>
 
@@ -279,7 +312,7 @@ function MentorOnboardingContent() {
                   type="text"
                   value={preferredLanguage}
                   onChange={(e) => setPreferredLanguage(e.target.value)}
-                  placeholder="e.g. Hindi, English, Tamil, Bengali"
+                  placeholder="e.g. Hindi, English, Bengali, Tamil"
                   className={styles.input}
                 />
               </div>
@@ -309,7 +342,7 @@ function MentorOnboardingContent() {
         {step === 4 && (
           <div>
             <div className={styles.stepBadge}>Step 4 of 4 • Preview & Publish</div>
-            <h1 className={styles.title}>Your Mentor Profile is Ready</h1>
+            <h1 className={styles.title}>Review & Publish Your Profile</h1>
             <p className={styles.subtitle}>
               Here is how learners will see your profile on the mentor directory.
             </p>
@@ -324,7 +357,7 @@ function MentorOnboardingContent() {
                     <ShieldCheck size={18} color="#34d399" />
                   </div>
                   <div style={{ fontSize: "0.9rem", color: "#34d399", marginTop: "0.2rem" }}>
-                    {title} • {location}
+                    {title || "Mentor Title"} • {location || "India"}
                   </div>
                 </div>
 
@@ -340,7 +373,7 @@ function MentorOnboardingContent() {
               </div>
 
               <p style={{ fontSize: "0.9rem", color: "rgba(226, 237, 231, 0.8)", lineHeight: "1.6", margin: "0 0 1rem 0" }}>
-                {bio}
+                {bio || "No bio provided."}
               </p>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -380,12 +413,12 @@ function MentorOnboardingContent() {
                 {loading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Publishing Profile...</span>
+                    <span>Saving to Database...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles size={16} />
-                    <span>Publish Profile & Open Dashboard</span>
+                    <span>Publish Profile & Open Studio</span>
                   </>
                 )}
               </button>

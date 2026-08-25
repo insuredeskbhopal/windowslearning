@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
@@ -45,23 +45,55 @@ function LearnerOnboardingContent() {
 
   const { refreshUser } = useAuth();
   const [step, setStep] = useState(1);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(["cooking"]);
-  const [primaryGoal, setPrimaryGoal] = useState("daily");
-  const [experienceLevel, setExperienceLevel] = useState("Beginner");
-  const [timeCommitment, setTimeCommitment] = useState("3-5 hours/week");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [primaryGoal, setPrimaryGoal] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+  const [timeCommitment, setTimeCommitment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleSkill = (id: string) => {
     if (selectedSkills.includes(id)) {
-      if (selectedSkills.length > 1) {
-        setSelectedSkills(selectedSkills.filter((s) => s !== id));
-      }
+      setSelectedSkills(selectedSkills.filter((s) => s !== id));
     } else {
       setSelectedSkills([...selectedSkills, id]);
     }
   };
 
+  const handleStep1Next = () => {
+    setError("");
+    if (selectedSkills.length === 0) {
+      setError("Please select at least one skill you want to learn.");
+      return;
+    }
+    setStep(2);
+  };
+
+  const handleStep2Next = () => {
+    setError("");
+    if (!primaryGoal) {
+      setError("Please choose your primary learning goal.");
+      return;
+    }
+    setStep(3);
+  };
+
+  const handleStep3Next = () => {
+    setError("");
+    if (!experienceLevel) {
+      setError("Please select your current experience level.");
+      return;
+    }
+    setStep(4);
+  };
+
   const handleFinish = async () => {
+    setError("");
+    if (!timeCommitment) {
+      setError("Please choose your weekly learning time.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/onboarding/learner", {
@@ -78,7 +110,6 @@ function LearnerOnboardingContent() {
 
       if (res.ok) {
         await refreshUser();
-        // If there was an active redirect (e.g. from clicking a mentor or booking)
         if (redirect && redirect !== "/" && !redirect.startsWith("/auth") && !redirect.startsWith("/onboarding")) {
           router.push(redirect);
         } else {
@@ -104,8 +135,8 @@ function LearnerOnboardingContent() {
           { label: "SKILL", href: "/skills" },
           { label: "MENTOR", href: "/mentors" },
         ]}
-        ctaLabel="BROWSE"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/login"
       />
 
       <div className={styles.card}>
@@ -117,13 +148,20 @@ function LearnerOnboardingContent() {
           <div className={`${styles.progressStep} ${step >= 4 ? styles.progressStepActive : ""}`} />
         </div>
 
+        {error && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "10px", padding: "0.75rem 1rem", color: "#f87171", fontSize: "0.85rem", marginBottom: "1.25rem" }}>
+            <AlertCircle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+
         {/* Step 1: Skills */}
         {step === 1 && (
           <div>
             <div className={styles.stepBadge}>Step 1 of 4 • Target Skills</div>
             <h1 className={styles.title}>What do you want to learn?</h1>
             <p className={styles.subtitle}>
-              Pick one or more skills you are excited to master with a mentor.
+              Pick one or more practical skills you want to master with a mentor.
             </p>
 
             <div className={styles.optionsGrid}>
@@ -150,7 +188,7 @@ function LearnerOnboardingContent() {
               <button
                 type="button"
                 className={styles.nextBtn}
-                onClick={() => setStep(2)}
+                onClick={handleStep1Next}
               >
                 <span>Continue</span>
                 <ArrowRight size={16} />
@@ -198,7 +236,7 @@ function LearnerOnboardingContent() {
               <button
                 type="button"
                 className={styles.nextBtn}
-                onClick={() => setStep(3)}
+                onClick={handleStep2Next}
               >
                 <span>Continue</span>
                 <ArrowRight size={16} />
@@ -246,7 +284,7 @@ function LearnerOnboardingContent() {
               <button
                 type="button"
                 className={styles.nextBtn}
-                onClick={() => setStep(4)}
+                onClick={handleStep3Next}
               >
                 <span>Continue</span>
                 <ArrowRight size={16} />
@@ -300,7 +338,7 @@ function LearnerOnboardingContent() {
                 {loading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Personalizing...</span>
+                    <span>Saving Profile...</span>
                   </>
                 ) : (
                   <>

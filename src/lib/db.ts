@@ -438,6 +438,20 @@ export async function saveMentorProfile(
   });
 }
 
+export async function getMentorProfileByUserId(userId: string): Promise<DbMentorProfile | null> {
+  const db = getDbPool();
+  const res = await db.query(
+    'SELECT * FROM windowslearning."MentorProfile" WHERE "userId" = $1 LIMIT 1;',
+    [userId]
+  );
+  if (res.rows.length === 0) return null;
+  const row = res.rows[0];
+  return {
+    ...row,
+    teachingSkills: typeof row.teachingSkills === "string" ? JSON.parse(row.teachingSkills) : row.teachingSkills || [],
+  };
+}
+
 // ----------------------------------------------------
 // Bookings Handlers
 // ----------------------------------------------------
