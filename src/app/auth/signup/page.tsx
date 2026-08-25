@@ -48,6 +48,11 @@ function SignupForm() {
     }
 
     if (user.learnerOnboardingComplete || user.mentorOnboardingComplete) {
+      if (redirect && redirect !== "/" && redirect !== "/auth/login" && redirect !== "/auth/signup") {
+        router.push(redirect);
+        return;
+      }
+
       if (user.roles?.includes("MENTOR")) {
         router.push("/mentor/dashboard");
       } else {

@@ -50,6 +50,11 @@ function LoginForm() {
       return;
     }
 
+    if (redirect && redirect !== "/" && redirect !== "/auth/login" && redirect !== "/auth/signup") {
+      router.push(redirect);
+      return;
+    }
+
     // Always route directly to the user's dedicated dashboard
     if (user.roles?.includes("MENTOR")) {
       router.push("/mentor/dashboard");
