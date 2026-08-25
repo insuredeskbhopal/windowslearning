@@ -1157,62 +1157,68 @@ export default function MentorStudioPage() {
                   </div>
                 </form>
               ) : (
-                <div style={{ background: "rgba(4, 13, 9, 0.9)", border: "1px solid rgba(52, 211, 153, 0.25)", borderRadius: "24px", padding: "2rem" }}>
-                  <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start", flexWrap: "wrap" }}>
-                    <div style={{ width: "90px", height: "90px", borderRadius: "50%", background: "rgba(52, 211, 153, 0.15)", border: "2px solid #34d399", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem", fontWeight: 800, color: "#34d399" }}>
+                <div className={styles.profilePreviewCard}>
+                  <div className={styles.profilePreviewTop}>
+                    <div className={styles.profileAvatarLarge}>
                       {initials}
                     </div>
 
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
-                        <h1 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#ffffff", margin: 0 }}>{user.name}</h1>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", padding: "0.2rem 0.6rem", borderRadius: "9999px", background: "rgba(52, 211, 153, 0.15)", color: "#34d399", fontSize: "0.75rem", fontWeight: 700 }}>
+                    <div className={styles.profilePreviewInfo}>
+                      <div className={styles.profileNameRow}>
+                        <h1 className={styles.profileName}>{user.name}</h1>
+                        <span className={styles.verifiedPill}>
                           <ShieldCheck size={13} />
                           <span>Verified Mentor</span>
                         </span>
                       </div>
 
-                      <div style={{ fontSize: "1.05rem", color: "#34d399", fontWeight: 600, marginBottom: "0.75rem" }}>
+                      <div className={styles.profileRoleTitle}>
                         {profile?.title || editTitle || "Verified Practical Mentor"}
                       </div>
 
-                      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", fontSize: "0.85rem", color: "rgba(226, 237, 231, 0.75)" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <div className={styles.profileMetaBadges}>
+                        <span className={styles.metaBadgeItem}>
                           <MapPin size={14} color="#34d399" />
                           <span>{profile?.location || editLocation || "India"}</span>
                         </span>
-                        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                        <span className={styles.metaBadgeItem}>
                           <Clock size={14} color="#34d399" />
                           <span>{profile?.experienceYears || editExperienceYears} Years Experience</span>
                         </span>
-                        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                        <span className={styles.metaBadgeItem}>
                           <Languages size={14} color="#34d399" />
                           <span>{profile?.preferredLanguage || editLanguage || "Hindi / English"}</span>
                         </span>
                       </div>
                     </div>
 
-                    <div style={{ background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(52, 211, 153, 0.3)", borderRadius: "16px", padding: "1.25rem", minWidth: "220px", textAlign: "center" }}>
-                      <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.7)" }}>1-on-1 Rate</div>
-                      <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#34d399", fontFamily: "var(--font-mono)", margin: "0.25rem 0" }}>
+                    <div className={styles.profileRateBox}>
+                      <div className={styles.rateLabel}>1-on-1 Rate</div>
+                      <div className={styles.rateValue}>
                         {profile?.isFreeCommunity ? "Free" : `₹${profile?.hourlyRate || editRate}`}
                       </div>
-                      <div style={{ fontSize: "0.75rem", color: "rgba(226, 237, 231, 0.6)" }}>per 60-min practical lesson</div>
+                      <div className={styles.rateSubtext}>per 60-min practical lesson</div>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                    <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>About the Mentor</h3>
-                    <p style={{ fontSize: "0.92rem", color: "rgba(226, 237, 231, 0.8)", lineHeight: "1.6", margin: 0 }}>
+                  <div className={styles.profileSectionBlock}>
+                    <h3 className={styles.profileSectionHeading}>
+                      <BookOpen size={16} color="#34d399" />
+                      <span>About the Mentor</span>
+                    </h3>
+                    <p className={styles.profileBioText}>
                       {profile?.bio || editBio || "Dedicated mentor committed to practical guidance."}
                     </p>
                   </div>
 
                   <div style={{ marginTop: "1.75rem" }}>
-                    <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>Teaching Skills</h3>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <h3 className={styles.profileSectionHeading}>
+                      <Sparkles size={16} color="#34d399" />
+                      <span>Teaching Skills</span>
+                    </h3>
+                    <div className={styles.skillsPillsRow}>
                       {activeSkillsList.map((sk: string) => (
-                        <span key={sk} style={{ padding: "0.35rem 0.85rem", borderRadius: "9999px", background: "rgba(52, 211, 153, 0.12)", border: "1px solid rgba(52, 211, 153, 0.3)", color: "#34d399", fontSize: "0.85rem", fontWeight: 700 }}>
+                        <span key={sk} className={styles.skillPillTag}>
                           #{sk.replace(/-/g, " ")}
                         </span>
                       ))}

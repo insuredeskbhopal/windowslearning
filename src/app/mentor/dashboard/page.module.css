@@ -889,6 +889,163 @@
   background: #10b981;
 }
 
+/* ----------------------------------------------------
+   Profile Preview Card Styles
+   ---------------------------------------------------- */
+.profilePreviewCard {
+  background: rgba(4, 13, 9, 0.9);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 24px;
+  padding: 2.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.profilePreviewTop {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.profileAvatarLarge {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.15);
+  border: 2px solid #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+.profilePreviewInfo {
+  flex: 1;
+  min-width: 260px;
+}
+
+.profileNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.profileName {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.verifiedPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 9999px;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.profileRoleTitle {
+  font-size: 1.05rem;
+  color: #34d399;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.profileMetaBadges {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: rgba(226, 237, 231, 0.75);
+}
+
+.metaBadgeItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.profileRateBox {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  min-width: 220px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.rateLabel {
+  font-size: 0.78rem;
+  color: rgba(226, 237, 231, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+}
+
+.rateValue {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #34d399;
+  font-family: var(--font-mono);
+  margin: 0.25rem 0;
+}
+
+.rateSubtext {
+  font-size: 0.75rem;
+  color: rgba(226, 237, 231, 0.6);
+}
+
+.profileSectionBlock {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profileSectionHeading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.profileBioText {
+  font-size: 0.92rem;
+  color: rgba(226, 237, 231, 0.8);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.skillsPillsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skillPillTag {
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 /* Modals */
 .modalOverlay {
   position: fixed;
