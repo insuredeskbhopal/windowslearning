@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useMemo, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, Loader2, Sparkles, ShieldCheck, Clock, AlertCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, Sparkles, ShieldCheck, Clock, AlertCircle, MapPin, Briefcase, Languages } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
@@ -18,6 +18,78 @@ const SKILL_TOPICS = [
   { id: "mobile-repairing-electronics", label: "📱 Mobile Repair & Gadgets" },
   { id: "yoga-daily-fitness-diet", label: "🧘 Yoga & Health Guidance" },
   { id: "small-business-accounts-tally", label: "📊 Business Accounts & Tally" },
+];
+
+const POPULAR_CITIES = [
+  "Bhopal, Madhya Pradesh, India",
+  "Indore, Madhya Pradesh, India",
+  "Delhi, NCR, India",
+  "Mumbai, Maharashtra, India",
+  "Pune, Maharashtra, India",
+  "Nagpur, Maharashtra, India",
+  "Bengaluru, Karnataka, India",
+  "Hyderabad, Telangana, India",
+  "Jaipur, Rajasthan, India",
+  "Jodhpur, Rajasthan, India",
+  "Udaipur, Rajasthan, India",
+  "Lucknow, Uttar Pradesh, India",
+  "Kanpur, Uttar Pradesh, India",
+  "Varanasi, Uttar Pradesh, India",
+  "Agra, Uttar Pradesh, India",
+  "Kolkata, West Bengal, India",
+  "Ahmedabad, Gujarat, India",
+  "Surat, Gujarat, India",
+  "Vadodara, Gujarat, India",
+  "Patna, Bihar, India",
+  "Ranchi, Jharkhand, India",
+  "Chandigarh, Punjab, India",
+  "Ludhiana, Punjab, India",
+  "Amritsar, Punjab, India",
+  "Chennai, Tamil Nadu, India",
+  "Coimbatore, Tamil Nadu, India",
+  "Madurai, Tamil Nadu, India",
+  "Kochi, Kerala, India",
+  "Thiruvananthapuram, Kerala, India",
+  "Guwahati, Assam, India",
+  "Dehradun, Uttarakhand, India",
+  "Bhubaneswar, Odisha, India",
+  "Raipur, Chhattisgarh, India",
+  "Gwalior, Madhya Pradesh, India",
+  "Jabalpur, Madhya Pradesh, India",
+];
+
+const POPULAR_TITLES = [
+  "Master Tailor & Boutique Designer",
+  "Home Chef & Traditional Recipe Expert",
+  "Cake Baker & Pastry Designer",
+  "Vedic Maths & Speed Calculation Coach",
+  "Human Biology & Medical Science Teacher",
+  "Spoken English & Communication Coach",
+  "Computer Basics & MS Excel Trainer",
+  "Smartphone & Electronics Repair Specialist",
+  "Yoga & Daily Fitness Instructor",
+  "Small Business Accounts & Tally Tutor",
+  "Guitar & Classical Music Teacher",
+  "Art, Drawing & Sketching Instructor",
+  "Handicrafts & Embroidery Artist",
+  "Organic Gardening & Plant Care Guide",
+];
+
+const POPULAR_LANGUAGES = [
+  "Hindi",
+  "English",
+  "Hindi & English (Bilingual)",
+  "Marathi",
+  "Bengali",
+  "Tamil",
+  "Telugu",
+  "Gujarati",
+  "Kannada",
+  "Malayalam",
+  "Punjabi",
+  "Odia",
+  "Urdu",
+  "Assamese",
 ];
 
 function MentorOnboardingContent() {
@@ -36,6 +108,29 @@ function MentorOnboardingContent() {
   const [preferredLanguage, setPreferredLanguage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Suggestions state
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [showTitleSuggestions, setShowTitleSuggestions] = useState(false);
+  const [showLangSuggestions, setShowLangSuggestions] = useState(false);
+
+  const filteredCities = useMemo(() => {
+    if (!location.trim()) return [];
+    const q = location.toLowerCase();
+    return POPULAR_CITIES.filter((c) => c.toLowerCase().includes(q)).slice(0, 6);
+  }, [location]);
+
+  const filteredTitles = useMemo(() => {
+    if (!title.trim()) return [];
+    const q = title.toLowerCase();
+    return POPULAR_TITLES.filter((t) => t.toLowerCase().includes(q)).slice(0, 5);
+  }, [title]);
+
+  const filteredLanguages = useMemo(() => {
+    if (!preferredLanguage.trim()) return [];
+    const q = preferredLanguage.toLowerCase();
+    return POPULAR_LANGUAGES.filter((l) => l.toLowerCase().includes(q)).slice(0, 5);
+  }, [preferredLanguage]);
 
   const toggleSkill = (id: string) => {
     if (teachingSkills.includes(id)) {
@@ -141,34 +236,93 @@ function MentorOnboardingContent() {
             <div className={styles.stepBadge}>Step 1 of 4 • Basic Profile</div>
             <h1 className={styles.title}>Tell us about your teaching profile</h1>
             <p className={styles.subtitle}>
-              Enter your real teaching title, city, and practical experience.
+              Enter your teaching title, city, and practical experience. Suggestions appear as you type.
             </p>
 
             <div className={styles.formGrid}>
+              {/* Professional Title with Autocomplete */}
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>Your Professional Title / Role</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Master Tailor & Dress Designer, Home Chef, Speed Maths Coach"
-                  className={styles.input}
-                  required
-                />
+                <div className={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      setShowTitleSuggestions(true);
+                    }}
+                    onFocus={() => setShowTitleSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowTitleSuggestions(false), 200)}
+                    placeholder="e.g. Master Tailor, Home Chef, Speed Maths Coach..."
+                    className={styles.input}
+                    required
+                  />
+
+                  {showTitleSuggestions && filteredTitles.length > 0 && (
+                    <div className={styles.suggestionsDropdown}>
+                      {filteredTitles.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={styles.suggestionItem}
+                          onMouseDown={() => {
+                            setTitle(item);
+                            setShowTitleSuggestions(false);
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Briefcase size={14} color="#34d399" />
+                            <span>{item}</span>
+                          </div>
+                          <span style={{ fontSize: "0.72rem", color: "rgba(226, 237, 231, 0.5)" }}>Select</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* City & State with Autocomplete */}
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>City & State</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Bhopal, Madhya Pradesh, India"
-                  className={styles.input}
-                  required
-                />
+                <div className={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => {
+                      setLocation(e.target.value);
+                      setShowCitySuggestions(true);
+                    }}
+                    onFocus={() => setShowCitySuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
+                    placeholder="Type your city (e.g. Bhopal, Indore, Jaipur, Delhi...)"
+                    className={styles.input}
+                    required
+                  />
+
+                  {showCitySuggestions && filteredCities.length > 0 && (
+                    <div className={styles.suggestionsDropdown}>
+                      {filteredCities.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={styles.suggestionItem}
+                          onMouseDown={() => {
+                            setLocation(item);
+                            setShowCitySuggestions(false);
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <MapPin size={14} color="#34d399" />
+                            <span>{item}</span>
+                          </div>
+                          <span style={{ fontSize: "0.72rem", color: "rgba(226, 237, 231, 0.5)" }}>Select</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* Bio */}
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>Short Bio / What You Help People Learn</label>
                 <textarea
@@ -306,15 +460,44 @@ function MentorOnboardingContent() {
                 </select>
               </div>
 
+              {/* Preferred Language with Autocomplete */}
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>Languages You Teach In</label>
-                <input
-                  type="text"
-                  value={preferredLanguage}
-                  onChange={(e) => setPreferredLanguage(e.target.value)}
-                  placeholder="e.g. Hindi, English, Bengali, Tamil"
-                  className={styles.input}
-                />
+                <div className={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={preferredLanguage}
+                    onChange={(e) => {
+                      setPreferredLanguage(e.target.value);
+                      setShowLangSuggestions(true);
+                    }}
+                    onFocus={() => setShowLangSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowLangSuggestions(false), 200)}
+                    placeholder="Type language (e.g. Hindi, English, Bengali, Tamil...)"
+                    className={styles.input}
+                  />
+
+                  {showLangSuggestions && filteredLanguages.length > 0 && (
+                    <div className={styles.suggestionsDropdown}>
+                      {filteredLanguages.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={styles.suggestionItem}
+                          onMouseDown={() => {
+                            setPreferredLanguage(item);
+                            setShowLangSuggestions(false);
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Languages size={14} color="#34d399" />
+                            <span>{item}</span>
+                          </div>
+                          <span style={{ fontSize: "0.72rem", color: "rgba(226, 237, 231, 0.5)" }}>Select</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
