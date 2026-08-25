@@ -5,14 +5,31 @@ import { createSessionToken, COOKIE_OPTIONS } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { credential, email, name, avatarUrl, intent } = body;
+    const { credential, accessToken, email, name, avatarUrl, intent } = body;
 
     let userEmail = email ? email.toLowerCase().trim() : "";
     let userName = name ? name.trim() : "";
     let userAvatar = avatarUrl || "";
 
-    // If Google ID Token credential was supplied, verify with Google's tokeninfo API
-    if (credential) {
+    // 1. If OAuth2 access_token was supplied, fetch userinfo from Google
+    if (accessToken) {
+      try {
+        const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (userInfoRes.ok) {
+          const info = await userInfoRes.json();
+          userEmail = info.email?.toLowerCase().trim() || userEmail;
+          userName = info.name || info.given_name || userName;
+          userAvatar = info.picture || userAvatar;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch Google userinfo with access token:", err);
+      }
+    }
+
+    // 2. If Google ID Token credential was supplied, verify with Google's tokeninfo API
+    if (!userEmail && credential) {
       try {
         const verifyRes = await fetch(
           `https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`
@@ -22,8 +39,6 @@ export async function POST(req: NextRequest) {
           userEmail = googleData.email?.toLowerCase().trim() || userEmail;
           userName = googleData.name || googleData.given_name || userName;
           userAvatar = googleData.picture || userAvatar;
-        } else {
-          console.warn("Google token verification failed, falling back to body params");
         }
       } catch (err) {
         console.warn("Failed to reach Google tokeninfo API:", err);

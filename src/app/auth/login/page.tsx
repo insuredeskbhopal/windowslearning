@@ -28,6 +28,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [gisLoaded, setGisLoaded] = useState(false);
 
   const handlePostAuthRedirect = (user: any) => {
     if (action === "book" && mentorId) {
@@ -72,20 +73,26 @@ function LoginForm() {
     }
   };
 
-  useEffect(() => {
+  const initGoogleGis = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (typeof window !== "undefined" && window.google && clientId) {
+    if (typeof window !== "undefined" && window.google?.accounts && clientId) {
       try {
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: handleGoogleCredentialResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
+          use_fedcm_for_prompt: false,
         });
+        setGisLoaded(true);
       } catch (err) {
-        console.warn("Google GIS init:", err);
+        console.warn("GIS Init Note:", err);
       }
     }
+  };
+
+  useEffect(() => {
+    initGoogleGis();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,19 +114,44 @@ function LoginForm() {
 
   const handleGoogleAuth = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (typeof window !== "undefined" && window.google?.accounts?.id && clientId) {
+
+    // Use OAuth2 Token Client popup flow to bypass FedCM on localhost
+    if (typeof window !== "undefined" && window.google?.accounts?.oauth2 && clientId) {
       try {
-        window.google.accounts.id.initialize({
+        setError("");
+        setLoading(true);
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: clientId,
-          callback: handleGoogleCredentialResponse,
+          scope: "email profile openid",
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse?.access_token) {
+              const res = await loginWithGoogle(
+                intent || undefined,
+                undefined,
+                undefined,
+                tokenResponse.access_token
+              );
+              setLoading(false);
+              if (res.success) {
+                const meRes = await fetch("/api/auth/me");
+                const meData = await meRes.json();
+                handlePostAuthRedirect(meData.user || {});
+              } else {
+                setError(res.message || "Google authentication failed.");
+              }
+            } else {
+              setLoading(false);
+            }
+          },
         });
-        window.google.accounts.id.prompt();
+        tokenClient.requestAccessToken({ prompt: "select_account" });
         return;
       } catch (err) {
-        console.warn("Google Prompt failed, falling back to prompt:", err);
+        console.warn("OAuth tokenClient failed, using prompt fallback:", err);
       }
     }
 
+    // Direct Google Email input fallback
     const enteredEmail = window.prompt("Enter your Google Account Email:", email || "user@gmail.com");
     if (!enteredEmail) return;
 
@@ -147,15 +179,7 @@ function LoginForm() {
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
-        onLoad={() => {
-          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-          if (window.google && clientId) {
-            window.google.accounts.id.initialize({
-              client_id: clientId,
-              callback: handleGoogleCredentialResponse,
-            });
-          }
-        }}
+        onLoad={initGoogleGis}
       />
       <div className={styles.ambientGlow} />
 
