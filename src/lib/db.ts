@@ -117,11 +117,39 @@ export interface DbBooking {
 // Database Query Functions
 // ----------------------------------------------------
 
-export async function getAllSkillsFromDb(): Promise<DbSkill[]> {
+export async function getSkillsFromDb(filters?: {
+  category?: string;
+  difficulty?: string;
+  search?: string;
+  featured?: boolean;
+}): Promise<DbSkill[]> {
   const db = getDbPool();
-  const res = await db.query(
-    'SELECT * FROM windowslearning."Skill" ORDER BY "featured" DESC, "rating" DESC;'
-  );
+  let query = 'SELECT * FROM windowslearning."Skill" WHERE 1=1';
+  const values: any[] = [];
+
+  if (filters?.category && filters.category !== "all") {
+    values.push(filters.category);
+    query += ` AND ("category" = $${values.length})`;
+  }
+
+  if (filters?.difficulty && filters.difficulty !== "all") {
+    values.push(filters.difficulty);
+    query += ` AND (LOWER("difficulty") = LOWER($${values.length}))`;
+  }
+
+  if (filters?.search && filters.search.trim()) {
+    values.push(`%${filters.search.trim()}%`);
+    query += ` AND ("title" ILIKE $${values.length} OR "description" ILIKE $${values.length} OR "categoryLabel" ILIKE $${values.length})`;
+  }
+
+  if (filters?.featured !== undefined) {
+    values.push(filters.featured);
+    query += ` AND ("featured" = $${values.length})`;
+  }
+
+  query += ' ORDER BY "featured" DESC, "rating" DESC;';
+
+  const res = await db.query(query, values);
   return res.rows.map((row) => ({
     ...row,
     tags: typeof row.tags === "string" ? JSON.parse(row.tags) : row.tags || [],
@@ -132,12 +160,38 @@ export async function getAllSkillsFromDb(): Promise<DbSkill[]> {
   }));
 }
 
-export async function getAllMentorsFromDb(): Promise<DbMentor[]> {
+export async function getAllSkillsFromDb(): Promise<DbSkill[]> {
+  return getSkillsFromDb();
+}
+
+export async function getMentorsFromDb(filters?: {
+  skill?: string;
+  availability?: string;
+  freeOnly?: boolean;
+  search?: string;
+}): Promise<DbMentor[]> {
   const db = getDbPool();
-  const res = await db.query(
-    'SELECT * FROM windowslearning."Mentor" ORDER BY "featured" DESC, "rating" DESC;'
-  );
-  return res.rows.map((row) => ({
+  let query = 'SELECT * FROM windowslearning."Mentor" WHERE 1=1';
+  const values: any[] = [];
+
+  if (filters?.availability && filters.availability !== "all") {
+    values.push(filters.availability);
+    query += ` AND ("availability" = $${values.length})`;
+  }
+
+  if (filters?.freeOnly) {
+    query += ' AND ("isFreeCommunity" = true)';
+  }
+
+  if (filters?.search && filters.search.trim()) {
+    values.push(`%${filters.search.trim()}%`);
+    query += ` AND ("name" ILIKE $${values.length} OR "role" ILIKE $${values.length} OR "company" ILIKE $${values.length} OR "bio" ILIKE $${values.length})`;
+  }
+
+  query += ' ORDER BY "featured" DESC, "rating" DESC;';
+
+  const res = await db.query(query, values);
+  let mentors = res.rows.map((row) => ({
     ...row,
     skills: typeof row.skills === "string" ? JSON.parse(row.skills) : row.skills || [],
     skillsLabels:
@@ -145,6 +199,21 @@ export async function getAllMentorsFromDb(): Promise<DbMentor[]> {
         ? JSON.parse(row.skillsLabels)
         : row.skillsLabels || [],
   }));
+
+  if (filters?.skill && filters.skill !== "all") {
+    const s = filters.skill.toLowerCase();
+    mentors = mentors.filter(
+      (m) =>
+        m.skills.some((sk: string) => sk.toLowerCase().includes(s)) ||
+        m.skillsLabels.some((sl: string) => sl.toLowerCase().includes(s))
+    );
+  }
+
+  return mentors;
+}
+
+export async function getAllMentorsFromDb(): Promise<DbMentor[]> {
+  return getMentorsFromDb();
 }
 
 // ----------------------------------------------------
