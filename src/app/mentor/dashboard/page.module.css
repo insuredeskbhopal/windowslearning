@@ -1,0 +1,578 @@
+.studioRoot {
+  display: flex;
+  min-height: 100vh;
+  background-color: #020705;
+  color: #ffffff;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ambient glow accents */
+.ambientGlow {
+  position: fixed;
+  top: 5%;
+  left: 30%;
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ----------------------------------------------------
+   Sidebar Navigation
+   ---------------------------------------------------- */
+.sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, rgba(8, 22, 16, 0.95) 0%, rgba(4, 12, 8, 0.98) 100%);
+  border-right: 1px solid rgba(52, 211, 153, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.75rem 1.25rem;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+  backdrop-filter: blur(20px);
+  flex-shrink: 0;
+}
+
+.sidebarHeader {
+  margin-bottom: 2rem;
+}
+
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+
+.brandText {
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.brandText span {
+  color: #34d399;
+}
+
+.studioBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: #34d399;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badgePulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.navItemBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(226, 237, 231, 0.7);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.navItemBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.navItemBtnActive {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(52, 211, 153, 0.3);
+  color: #34d399;
+  font-weight: 600;
+}
+
+.navItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navBadge {
+  background: #10b981;
+  color: #030a07;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.sidebarFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mentorUserCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mentorAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34d399;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.mentorInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.mentorName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mentorRoleTag {
+  font-size: 0.72rem;
+  color: #34d399;
+}
+
+.switchModeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 10px;
+  color: #34d399;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.switchModeBtn:hover {
+  background: #34d399;
+  color: #030a07;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(226, 237, 231, 0.5);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.logoutBtn:hover {
+  color: #f87171;
+}
+
+/* ----------------------------------------------------
+   Main Dashboard Content Area
+   ---------------------------------------------------- */
+.mainWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.topBar {
+  height: 72px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(4, 13, 9, 0.7);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pageHeaderTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.statusToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  color: #34d399;
+  font-weight: 600;
+}
+
+.viewDirectoryLink {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: rgba(226, 237, 231, 0.85);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.viewDirectoryLink:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #34d399;
+  color: #ffffff;
+}
+
+.contentArea {
+  padding: 2.25rem 2rem 4rem 2rem;
+  box-sizing: border-box;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* ----------------------------------------------------
+   Metrics Cards Row
+   ---------------------------------------------------- */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.metricCard {
+  background: linear-gradient(145deg, rgba(12, 29, 21, 0.85) 0%, rgba(5, 16, 11, 0.95) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 16px;
+  padding: 1.35rem 1.25rem;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.metricCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.metricTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: rgba(226, 237, 231, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metricIconWrapper {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34d399;
+}
+
+.metricValue {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 0.35rem;
+}
+
+.metricSubtext {
+  font-size: 0.78rem;
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ----------------------------------------------------
+   2-Column Layout
+   ---------------------------------------------------- */
+.studioColumnsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.75rem;
+}
+
+.cardSection {
+  background: linear-gradient(145deg, rgba(12, 29, 21, 0.85) 0%, rgba(5, 16, 11, 0.95) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-sizing: border-box;
+  margin-bottom: 1.75rem;
+}
+
+.cardSectionTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.cardSectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Sessions Table */
+.sessionItem {
+  background: rgba(4, 13, 9, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.1rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.sessionItem:hover {
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.sessionLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sessionTopic {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.sessionMeta {
+  font-size: 0.8rem;
+  color: rgba(226, 237, 231, 0.65);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actionPillBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: #34d399;
+  color: #030a07;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.actionPillBtn:hover {
+  background: #10b981;
+}
+
+/* Form Styles */
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fieldLabel {
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  color: rgba(226, 237, 231, 0.75);
+}
+
+.input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: rgba(4, 13, 9, 0.8);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: rgba(4, 13, 9, 0.8);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 0.92rem;
+  outline: none;
+  min-height: 100px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  border-color: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+}
+
+.saveBtn {
+  padding: 0.85rem 1.5rem;
+  background: #34d399;
+  color: #030a07;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.saveBtn:hover {
+  background: #10b981;
+}
+
+@media (max-width: 1024px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .studioColumnsGrid {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .studioRoot {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+}
