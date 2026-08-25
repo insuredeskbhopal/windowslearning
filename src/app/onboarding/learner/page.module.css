@@ -1,0 +1,165 @@
+.onboardingPage {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  background-color: #020705;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem 4rem 1.5rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.ambientGlow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  filter: blur(120px);
+  pointer-events: none;
+}
+
+.card {
+  width: 100%;
+  max-width: 640px;
+  background: linear-gradient(145deg, rgba(12, 29, 21, 0.85) 0%, rgba(5, 16, 11, 0.95) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 24px;
+  padding: 2.75rem 2.25rem;
+  box-sizing: border-box;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  position: relative;
+  z-index: 10;
+}
+
+.progressBar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.progressStep {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.progressStepActive {
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.stepBadge {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  color: #34d399;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.25;
+}
+
+.subtitle {
+  font-size: 0.92rem;
+  color: rgba(226, 237, 231, 0.7);
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.optionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(226, 237, 231, 0.9);
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.optionBtn:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.optionBtnSelected {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #34d399;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  color: rgba(226, 237, 231, 0.6);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+}
+
+.backBtn:hover {
+  color: #ffffff;
+}
+
+.nextBtn {
+  padding: 0.85rem 1.75rem;
+  background: #34d399;
+  color: #030a07;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 20px rgba(52, 211, 153, 0.3);
+  transition: all 0.2s ease;
+}
+
+.nextBtn:hover {
+  background: #10b981;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .optionsGrid {
+    grid-template-columns: 1fr;
+  }
+}

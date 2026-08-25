@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 const insaniburger = localFont({
@@ -20,8 +21,8 @@ const insaniburger = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "windowslearning",
-  description: "Learn. Connect. Grow. Next-generation Windows learning platform.",
+  title: "windowslearning — Learn Any Skill with Personal Mentors",
+  description: "Learn cooking, tailoring, maths, biology, spoken English, and computers 1-on-1 with friendly real-world mentors.",
 };
 
 export default function RootLayout({
@@ -31,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={insaniburger.variable}>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

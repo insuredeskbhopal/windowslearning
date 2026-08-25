@@ -24,6 +24,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
+import { useAuth } from "@/context/AuthContext";
 import { DbMentor } from "@/lib/db";
 import styles from "./page.module.css";
 
@@ -45,7 +46,10 @@ function MentorsSearchContent() {
   const router = useRouter();
   const skillParam = searchParams.get("skill") || "";
   const skillTitleParam = searchParams.get("skillTitle") || "";
+  const mentorIdParam = searchParams.get("mentorId") || "";
+  const actionParam = searchParams.get("action") || "";
 
+  const { user, requireAuth } = useAuth();
   const [mentors, setMentors] = useState<DbMentor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,6 +57,10 @@ function MentorsSearchContent() {
   const [selectedAvailability, setSelectedAvailability] = useState<string>("all");
   const [freeCommunityOnly, setFreeCommunityOnly] = useState<boolean>(false);
   const [bookingMentor, setBookingMentor] = useState<DbMentor | null>(null);
+  const [bookingTopic, setBookingTopic] = useState("");
+  const [bookingDate, setBookingDate] = useState(new Date().toISOString().split("T")[0]);
+  const [bookingTime, setBookingTime] = useState("10:00 AM - 11:00 AM (Morning)");
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
 
   // Pagination state
@@ -68,6 +76,17 @@ function MentorsSearchContent() {
         const data = await res.json();
         if (data.success && Array.isArray(data.mentors)) {
           setMentors(data.mentors);
+
+          // Auto reopen booking modal if returning from auth with action=book
+          if (actionParam === "book" && mentorIdParam) {
+            const target = data.mentors.find(
+              (m: DbMentor) => m.id === mentorIdParam || m.slug === mentorIdParam
+            );
+            if (target) {
+              setBookingMentor(target);
+              setBookingSuccess(false);
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to load mentors from database:", err);
@@ -76,7 +95,7 @@ function MentorsSearchContent() {
       }
     }
     loadMentors();
-  }, []);
+  }, [actionParam, mentorIdParam]);
 
   // Update selected skill filter if URL parameter changes
   useEffect(() => {
@@ -162,6 +181,53 @@ function MentorsSearchContent() {
     }
   };
 
+  const handleOpenBooking = (mentor: DbMentor) => {
+    // Check authentication guard
+    const isAuthed = requireAuth({
+      redirect: `/mentors?mentorId=${mentor.id}&action=book`,
+      action: "book",
+      extraParams: { mentorId: mentor.id },
+    });
+
+    if (isAuthed) {
+      setBookingMentor(mentor);
+      setBookingTopic(
+        skillTitleParam ? `Lesson on ${skillTitleParam}` : `Practical 1-on-1 Guidance`
+      );
+      setBookingSuccess(false);
+    }
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!bookingMentor) return;
+    setBookingLoading(true);
+
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mentorId: bookingMentor.id,
+          skillSlug: bookingMentor.skills[0] || "general",
+          topic: bookingTopic || "1-on-1 Practical Lesson",
+          scheduledDate: bookingDate,
+          timeSlot: bookingTime,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setBookingSuccess(true);
+      } else {
+        alert(data.message || "Failed to confirm booking.");
+      }
+    } catch {
+      alert("Failed to confirm booking. Please check your connection.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
   return (
     <div className={styles.mentorsPage}>
       <div className={styles.ambientGlow} />
@@ -174,7 +240,7 @@ function MentorsSearchContent() {
           { label: "MENTOR", href: "/mentors" },
           { label: "COMMUNITY", href: "/#community" },
           { label: "CAREER", href: "/#career" },
-          { label: "BECOME A MENTOR", href: "/#become-mentor" },
+          { label: "BECOME A MENTOR", href: "/onboarding/mentor" },
         ]}
         ctaLabel="START LEARNING"
         ctaHref="/skills"
@@ -481,10 +547,7 @@ function MentorsSearchContent() {
                       <button
                         type="button"
                         className={styles.bookBtn}
-                        onClick={() => {
-                          setBookingMentor(mentor);
-                          setBookingSuccess(false);
-                        }}
+                        onClick={() => handleOpenBooking(mentor)}
                       >
                         <Calendar size={15} />
                         <span>Book 1-on-1 Lesson</span>
@@ -557,7 +620,7 @@ function MentorsSearchContent() {
         </div>
       </main>
 
-      {/* Interactive 1-on-1 Lesson Booking Modal */}
+      {/* Interactive 1-on-1 Lesson Booking Modal with Backend Persistence */}
       {bookingMentor && (
         <div className={styles.modalBackdrop} onClick={() => setBookingMentor(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -599,7 +662,8 @@ function MentorsSearchContent() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={skillTitleParam ? `Lesson on ${skillTitleParam}` : "Practical 1-on-1 guidance & practice"}
+                    value={bookingTopic}
+                    onChange={(e) => setBookingTopic(e.target.value)}
                     placeholder="e.g. Blouse cutting practice, North Indian gravy recipe, Speed maths tricks..."
                     style={{
                       width: "100%",
@@ -622,7 +686,8 @@ function MentorsSearchContent() {
                     </label>
                     <input
                       type="date"
-                      defaultValue={new Date().toISOString().split("T")[0]}
+                      value={bookingDate}
+                      onChange={(e) => setBookingDate(e.target.value)}
                       style={{
                         width: "100%",
                         background: "rgba(4, 13, 9, 0.8)",
@@ -641,6 +706,8 @@ function MentorsSearchContent() {
                       Preferred Time
                     </label>
                     <select
+                      value={bookingTime}
+                      onChange={(e) => setBookingTime(e.target.value)}
                       style={{
                         width: "100%",
                         background: "rgba(4, 13, 9, 0.8)",
@@ -664,12 +731,22 @@ function MentorsSearchContent() {
 
                 <button
                   type="button"
+                  disabled={bookingLoading}
                   className={styles.bookBtn}
                   style={{ width: "100%", justifyContent: "center", padding: "0.9rem" }}
-                  onClick={() => setBookingSuccess(true)}
+                  onClick={handleConfirmBooking}
                 >
-                  <Sparkles size={16} />
-                  <span>Confirm Lesson ({bookingMentor.isFreeCommunity ? "Free Class" : `₹${bookingMentor.hourlyRate}`})</span>
+                  {bookingLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Confirming Session...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      <span>Confirm Lesson ({bookingMentor.isFreeCommunity ? "Free Class" : `₹${bookingMentor.hourlyRate}`})</span>
+                    </>
+                  )}
                 </button>
               </>
             ) : (
@@ -678,19 +755,27 @@ function MentorsSearchContent() {
                   <CheckCircle2 size={32} />
                 </div>
                 <h3 style={{ fontSize: "1.4rem", color: "#ffffff", margin: "0 0 0.5rem 0" }}>
-                  Lesson Request Sent!
+                  Lesson Confirmed & Booked!
                 </h3>
                 <p style={{ fontSize: "0.92rem", color: "rgba(226, 237, 231, 0.75)", margin: "0 0 1.5rem 0", lineHeight: "1.6" }}>
-                  Your 1-on-1 session request has been sent to <strong>{bookingMentor.name}</strong>. You will receive a WhatsApp & calendar confirmation shortly.
+                  Your 1-on-1 session with <strong>{bookingMentor.name}</strong> has been saved. You can manage your lessons in your Learner Dashboard.
                 </p>
-                <button
-                  type="button"
-                  className={styles.bookBtn}
-                  style={{ margin: "0 auto" }}
-                  onClick={() => setBookingMentor(null)}
-                >
-                  Back to Mentors Directory
-                </button>
+                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+                  <Link
+                    href="/learner/dashboard"
+                    className={styles.bookBtn}
+                    onClick={() => setBookingMentor(null)}
+                  >
+                    Go to Learner Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() => setBookingMentor(null)}
+                  >
+                    Browse More Mentors
+                  </button>
+                </div>
               </div>
             )}
           </div>

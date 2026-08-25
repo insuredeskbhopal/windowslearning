@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ArrowRight, Search } from "lucide-react";
+import { Menu, X, ArrowRight, Search, ShieldCheck, User, LogOut } from "lucide-react";
 import BrandLogo from "./BrandLogo";
+import { useAuth } from "@/context/AuthContext";
 import styles from "./Navbar.module.css";
 
 export interface NavItem {
@@ -29,7 +30,7 @@ const DEFAULT_NAV_ITEMS: NavItem[] = [
   { label: "MENTOR", href: "/mentors" },
   { label: "COMMUNITY", href: "/#community" },
   { label: "CAREER", href: "/#career" },
-  { label: "BECOME A MENTOR", href: "/#become-mentor" },
+  { label: "BECOME A MENTOR", href: "/onboarding/mentor" },
 ];
 
 export default function Navbar({
@@ -42,6 +43,7 @@ export default function Navbar({
   showSearch = false,
 }: NavbarProps) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<string>(
     pathname === "/skills"
@@ -51,100 +53,109 @@ export default function Navbar({
       : items[0]?.href || "/skills"
   );
   const [searchOpen, setSearchOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Scroll listener to activate sticky floating glass background
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Keyboard shortcut listener for Ctrl+K / Cmd+K
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setSearchOpen((prev) => !prev);
-      }
-      if (e.key === "Escape") {
-        setSearchOpen(false);
-        setMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
   }, [pathname]);
+
+  const dashboardUrl = user?.roles?.includes("MENTOR")
+    ? "/mentor/dashboard"
+    : "/learner/dashboard";
 
   return (
     <>
-      <header
-        className={`${styles.navWrapper} ${
-          isScrolled ? styles.navWrapperScrolled : ""
-        }`}
-      >
+      <header className={styles.navWrapper}>
         <div className={styles.navContainer}>
           {/* Brand Identity (Left) */}
           <Link href={brandHref} className={styles.brandLink} id="navbar-brand-logo">
-            <span className={styles.brandIcon}>
-              <BrandLogo size={28} />
-            </span>
+            <div className={styles.brandIcon}>
+              <BrandLogo size={24} />
+            </div>
             <span className={styles.brandText}>{brandName}</span>
           </Link>
 
-          {/* Desktop Capsule Menu (Right) */}
+          {/* Floating Light Capsule Navigation Container (Right) */}
           <nav className={styles.capsuleNav} aria-label="Main Navigation">
             <ul className={styles.navList}>
               {items.map((item) => {
-                const isActive = activeItem === item.href;
+                const isActive = activeItem === item.href || pathname === item.href;
                 return (
                   <li key={item.label} className={styles.navItem}>
                     <Link
                       href={item.href}
-                      className={`${styles.navLink} ${isActive ? styles.active : ""}`}
+                      className={`${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
                       onClick={() => setActiveItem(item.href)}
                     >
-                      {item.label}
+                      <span>{item.label}</span>
+                      {item.badge && <span className={styles.navBadge}>{item.badge}</span>}
                     </Link>
+                    {isActive && <div className={styles.activeIndicator} />}
                   </li>
                 );
               })}
             </ul>
 
-            {showSearch && (
-              <button
-                type="button"
-                className={styles.searchTrigger}
-                onClick={() => setSearchOpen(true)}
-                title="Search (Ctrl + K)"
-              >
-                <Search size={13} />
-                <span>Search</span>
-                <kbd className={styles.kbdKey}>⌘K</kbd>
-              </button>
-            )}
+            {/* User Session CTA or Sign In / Start Learning */}
+            {user ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <Link
+                  href={dashboardUrl}
+                  className={styles.ctaButton}
+                  id="navbar-dashboard-btn"
+                  title="Open Dashboard"
+                >
+                  <User size={14} style={{ display: "inline", marginRight: "4px" }} />
+                  <span>{user.name.split(" ")[0].toUpperCase()}</span>
+                </Link>
 
-            {/* Primary Action Button inside Capsule */}
-            <Link
-              href={ctaHref}
-              className={styles.ctaButton}
-              onClick={onCtaClick}
-              id="navbar-cta-button"
-            >
-              <span>{ctaLabel}</span>
-            </Link>
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  title="Sign Out"
+                  style={{
+                    background: "rgba(0,0,0,0.1)",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "32px",
+                    height: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "#0a261a",
+                  }}
+                >
+                  <LogOut size={14} />
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <Link
+                  href="/auth/login"
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    color: "#0a261a",
+                    textDecoration: "none",
+                    padding: "0.4rem 0.6rem",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  LOGIN
+                </Link>
+                <Link
+                  href={ctaHref}
+                  className={styles.ctaButton}
+                  onClick={onCtaClick}
+                  id="navbar-cta-button"
+                >
+                  <span>{ctaLabel}</span>
+                </Link>
+              </div>
+            )}
           </nav>
 
           {/* Mobile Hamburger Trigger */}
@@ -201,19 +212,57 @@ export default function Navbar({
               </Link>
             </li>
           ))}
-        </ul>
 
-        <Link
-          href={ctaHref}
-          className={`${styles.ctaButton} ${styles.mobileCta}`}
-          onClick={() => {
-            onCtaClick?.();
-            setMobileMenuOpen(false);
-          }}
-        >
-          <span>{ctaLabel}</span>
-          <ArrowRight size={14} />
-        </Link>
+          {user ? (
+            <>
+              <li>
+                <Link
+                  href={dashboardUrl}
+                  className={styles.mobileNavLink}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span>MY DASHBOARD ({user.name})</span>
+                  <ArrowRight size={15} opacity={0.6} />
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#f87171",
+                    padding: "1rem 0",
+                    fontSize: "0.95rem",
+                    cursor: "pointer",
+                    fontFamily: "var(--font-mono)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span>SIGN OUT</span>
+                </button>
+              </li>
+            </>
+          ) : (
+            <li>
+              <Link
+                href="/auth/login"
+                className={styles.mobileNavLink}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>LOGIN / SIGN UP</span>
+                <ArrowRight size={15} opacity={0.6} />
+              </Link>
+            </li>
+          )}
+        </ul>
       </div>
     </>
   );

@@ -21,7 +21,7 @@ export default function Home() {
     { label: "MENTOR", href: "/mentors" },
     { label: "COMMUNITY", href: "/#community" },
     { label: "CAREER", href: "/#career" },
-    { label: "BECOME A MENTOR", href: "/#become-mentor" },
+    { label: "BECOME A MENTOR", href: "/onboarding/mentor" },
   ];
 
   return (
@@ -64,7 +64,7 @@ export default function Home() {
         {/* Hero Call to Action Buttons */}
         <div className={styles.heroButtonRow}>
           <Link
-            href="/#become-mentor"
+            href="/onboarding/mentor"
             className={styles.primaryHeroBtn}
             id="hero-become-mentor-btn"
           >
@@ -108,7 +108,7 @@ export default function Home() {
       {/* 8. Simple 4-Step How It Works Progression */}
       <HowItWorks />
 
-      {/* 9. Teach: Become a Mentor Onboarding Banner & Registration Form */}
+      {/* 9. Teach: Become a Mentor Onboarding Banner & Registration */}
       <BecomeMentorBanner />
 
       {/* 10. Complete Site Footer */}
