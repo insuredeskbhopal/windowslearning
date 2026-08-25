@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, ArrowRight, Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Sparkles, AlertCircle, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
@@ -14,6 +14,7 @@ function LoginForm() {
   const redirect = searchParams.get("redirect") || "/";
   const intent = searchParams.get("intent") || "";
   const action = searchParams.get("action") || "";
+  const mentorId = searchParams.get("mentorId") || "";
 
   const { login, loginWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
@@ -22,6 +23,12 @@ function LoginForm() {
   const [error, setError] = useState("");
 
   const handlePostAuthRedirect = (user: any) => {
+    // If returning from booking a mentor, redirect back to mentor page with action=book preserved
+    if (action === "book" && mentorId) {
+      router.push(`/mentors?mentorId=${encodeURIComponent(mentorId)}&action=book`);
+      return;
+    }
+
     // If the user arrived with 'intent=mentor' and hasn't completed mentor onboarding
     if (intent === "mentor" && !user.mentorOnboardingComplete) {
       router.push(`/onboarding/mentor?redirect=${encodeURIComponent(redirect)}`);
@@ -38,8 +45,12 @@ function LoginForm() {
       return;
     }
 
-    // Existing user -> Return to intended action/page
-    router.push(redirect);
+    // Existing user -> Return to intended action/page or dashboard
+    if (redirect && redirect !== "/" && !redirect.startsWith("/auth")) {
+      router.push(redirect);
+    } else {
+      router.push(user.roles?.includes("MENTOR") ? "/mentor/dashboard" : "/learner/dashboard");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,20 +62,22 @@ function LoginForm() {
     setLoading(false);
 
     if (res.success) {
-      // Fetch fresh session state and redirect
       const meRes = await fetch("/api/auth/me");
       const meData = await meRes.json();
       handlePostAuthRedirect(meData.user || {});
     } else {
-      setError(res.message || "Invalid credentials.");
+      setError(res.message || "Invalid email or password. Please check and try again.");
     }
   };
 
   const handleGoogleAuth = async () => {
+    const enteredEmail = window.prompt("Enter your Google Account Email:", email || "user@gmail.com");
+    if (!enteredEmail) return;
+
     setError("");
     setLoading(true);
 
-    const res = await loginWithGoogle(intent || undefined);
+    const res = await loginWithGoogle(intent || undefined, enteredEmail);
     setLoading(false);
 
     if (res.success) {
@@ -74,6 +87,11 @@ function LoginForm() {
     } else {
       setError(res.message || "Google authentication failed.");
     }
+  };
+
+  const autofillDemoAccount = () => {
+    setEmail("learner@windowslearning.com");
+    setPassword("password123");
   };
 
   return (
@@ -87,8 +105,8 @@ function LoginForm() {
           { label: "MENTOR", href: "/mentors" },
           { label: "COMMUNITY", href: "/#community" },
         ]}
-        ctaLabel="BROWSE SKILLS"
-        ctaHref="/skills"
+        ctaLabel="GET STARTED"
+        ctaHref="/auth/signup"
       />
 
       <div className={styles.authCard}>
@@ -96,23 +114,23 @@ function LoginForm() {
           <div className={styles.brandTitle}>
             windows<span>learning</span>
           </div>
-          <h1 className={styles.title}>Welcome Back</h1>
+          <h1 className={styles.title}>Sign In with Real Account</h1>
           <p className={styles.subtitle}>
-            Sign in to continue learning, connect with mentors, or manage your classes.
+            Connected directly to PostgreSQL database. Enter your credentials to access your account.
           </p>
         </div>
 
         {intent === "mentor" && (
           <div className={styles.noticeBanner}>
             <Sparkles size={16} />
-            <span>Sign in to complete your Mentor Registration</span>
+            <span>Mentor Portal • Sign In to Manage Your Profile</span>
           </div>
         )}
 
         {action === "book" && (
           <div className={styles.noticeBanner}>
             <Sparkles size={16} />
-            <span>Sign in to complete your 1-on-1 Lesson Booking</span>
+            <span>Sign in to confirm your 1-on-1 mentor booking</span>
           </div>
         )}
 
@@ -123,7 +141,34 @@ function LoginForm() {
           </div>
         )}
 
-        {/* Google Authentication */}
+        {/* Real Seed Account Quick Helper */}
+        <div
+          onClick={autofillDemoAccount}
+          style={{
+            background: "rgba(16, 185, 129, 0.08)",
+            border: "1px dashed rgba(52, 211, 153, 0.35)",
+            borderRadius: "12px",
+            padding: "0.75rem 1rem",
+            marginBottom: "1.25rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          title="Click to autofill real seeded database user"
+        >
+          <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.85)" }}>
+            <div style={{ fontWeight: 700, color: "#34d399", marginBottom: "2px", display: "flex", alignItems: "center", gap: "4px" }}>
+              <ShieldCheck size={14} /> Real DB Test Account (Click to Autofill):
+            </div>
+            <div>learner@windowslearning.com • password123</div>
+          </div>
+          <span style={{ fontSize: "0.75rem", color: "#34d399", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
+            AUTOFILL
+          </span>
+        </div>
+
+        {/* Google Authentication with Real DB sync */}
         <button
           type="button"
           onClick={handleGoogleAuth}
@@ -151,7 +196,7 @@ function LoginForm() {
           <span>Continue with Google</span>
         </button>
 
-        <div className={styles.divider}>or with email</div>
+        <div className={styles.divider}>or with email & password</div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.fieldGroup}>
@@ -170,7 +215,9 @@ function LoginForm() {
           </div>
 
           <div className={styles.fieldGroup}>
-            <label className={styles.label}>Password</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label className={styles.label}>Password</label>
+            </div>
             <div className={styles.inputWrapper}>
               <Lock size={16} className={styles.inputIcon} />
               <input
@@ -188,11 +235,11 @@ function LoginForm() {
             {loading ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                <span>Signing in...</span>
+                <span>Verifying with Database...</span>
               </>
             ) : (
               <>
-                <span>Sign In</span>
+                <span>Sign In to Account</span>
                 <ArrowRight size={16} />
               </>
             )}
@@ -200,12 +247,12 @@ function LoginForm() {
         </form>
 
         <div className={styles.cardFooter}>
-          Don&apos;t have an account?{" "}
+          Don&apos;t have an account yet?{" "}
           <Link
-            href={`/auth/signup?redirect=${encodeURIComponent(redirect)}&intent=${intent}&action=${action}`}
+            href={`/auth/signup?redirect=${encodeURIComponent(redirect)}&intent=${intent}&action=${action}&mentorId=${mentorId}`}
             className={styles.footerLink}
           >
-            Create Account
+            Create Free Account
           </Link>
         </div>
       </div>
@@ -218,7 +265,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div style={{ minHeight: "100vh", background: "#020705", color: "#34d399", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          Loading...
+          Loading Login...
         </div>
       }
     >
