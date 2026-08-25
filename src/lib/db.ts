@@ -15,7 +15,7 @@ export interface DbSkill {
   id: string;
   slug: string;
   title: string;
-  category: "scripting" | "server" | "cloud" | "security" | "internals" | "networking";
+  category: string;
   categoryLabel: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   description: string;

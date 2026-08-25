@@ -2,7 +2,7 @@ export interface Skill {
   id: string;
   title: string;
   slug: string;
-  category: "scripting" | "server" | "cloud" | "security" | "internals" | "networking";
+  category: string;
   categoryLabel: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   description: string;
