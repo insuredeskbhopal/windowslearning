@@ -357,9 +357,15 @@ export default function MentorStudioPage() {
                       <Sparkles size={18} />
                     </div>
                   </div>
-                  <div className={styles.metricValue}>5.0 ★</div>
+                  <div className={styles.metricValue} style={{ fontSize: profile?.reviewsCount > 0 ? "1.6rem" : "1.3rem" }}>
+                    {profile?.reviewsCount > 0 ? `${profile.rating} ★` : "New Mentor"}
+                  </div>
                   <div className={styles.metricSubtext}>
-                    <span>100% Satisfaction</span>
+                    <span>
+                      {profile?.reviewsCount > 0
+                        ? `${profile.reviewsCount} learner reviews`
+                        : "Ready for first learner"}
+                    </span>
                   </div>
                 </div>
               </div>
