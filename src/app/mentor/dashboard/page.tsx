@@ -30,6 +30,8 @@ import {
   Sun,
   Moon,
   Coffee,
+  Zap,
+  Palmtree,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import BrandLogo from "@/components/Navbar/BrandLogo";
@@ -338,7 +340,10 @@ export default function MentorStudioPage() {
           <div className={styles.topBarRight}>
             <div className={styles.statusToggle}>
               <span className={styles.badgePulse} />
-              <span>{vacationMode ? "🏖️ Out of Office" : "Available for 1-on-1 Lessons"}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                {vacationMode ? <Palmtree size={14} color="#34d399" /> : <CheckCircle2 size={14} color="#34d399" />}
+                <span>{vacationMode ? "Out of Office" : "Available for 1-on-1 Lessons"}</span>
+              </div>
             </div>
 
             <Link href={`/mentors/${profileSlug}`} className={styles.viewDirectoryLink}>
@@ -756,8 +761,9 @@ export default function MentorStudioPage() {
                 {/* Instant Booking Toggle */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", marginTop: "1rem" }}>
                   <div>
-                    <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.92rem", marginBottom: "2px" }}>
-                      ⚡ Instant Booking Confirmation
+                    <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.92rem", marginBottom: "2px", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+                      <Zap size={16} color="#34d399" />
+                      <span>Instant Booking Confirmation</span>
                     </div>
                     <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.65)" }}>
                       Automatically accept lessons when a learner books an available slot.
@@ -774,8 +780,9 @@ export default function MentorStudioPage() {
                 {/* Vacation Mode Toggle */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <div>
-                    <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.92rem", marginBottom: "2px" }}>
-                      🏖️ Vacation / Out of Office Mode
+                    <div style={{ fontWeight: 700, color: "#ffffff", fontSize: "0.92rem", marginBottom: "2px", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+                      <Palmtree size={16} color="#34d399" />
+                      <span>Vacation / Out of Office Mode</span>
                     </div>
                     <div style={{ fontSize: "0.8rem", color: "rgba(226, 237, 231, 0.65)" }}>
                       Temporarily pause new booking requests on the directory.
